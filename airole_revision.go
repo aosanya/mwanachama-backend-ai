@@ -19,6 +19,7 @@ func (m *accountManager) saveRole(ctx context.Context, before, after AIRole, sav
 			FineTuning: before.FineTuning, UseAgencyInstructions: before.UseAgencyInstructions,
 			TokensPerCall: before.TokensPerCall, TokensPerDay: before.TokensPerDay, TokensPerMonth: before.TokensPerMonth,
 			RequestsPerDay: before.RequestsPerDay, RequestsPerMinute: before.RequestsPerMinute,
+			TokensPerWeek: before.TokensPerWeek, RequestsPerWeek: before.RequestsPerWeek,
 			SavedBy: savedBy, SavedAt: after.UpdatedAt,
 		}
 		if err := m.st.Insert(ctx, roleRevision, rev); err != nil {
@@ -75,6 +76,7 @@ func (m *accountManager) RestoreAIRoleRevision(ctx context.Context, agencyID, ro
 	next.FineTuning, next.UseAgencyInstructions = rev.FineTuning, rev.UseAgencyInstructions
 	next.TokensPerCall, next.TokensPerDay, next.TokensPerMonth = rev.TokensPerCall, rev.TokensPerDay, rev.TokensPerMonth
 	next.RequestsPerDay, next.RequestsPerMinute = rev.RequestsPerDay, rev.RequestsPerMinute
+	next.TokensPerWeek, next.RequestsPerWeek = rev.TokensPerWeek, rev.RequestsPerWeek
 	if err := m.validRole(next); err != nil {
 		return AIRole{}, err
 	}

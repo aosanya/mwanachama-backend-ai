@@ -81,6 +81,7 @@ func applyRoleInput(r *AIRole, in AIRoleInput) {
 	}
 	r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	r.RequestsPerDay, r.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
+	r.TokensPerWeek, r.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
 }
 
 func (m *accountManager) CreateAIRole(ctx context.Context, agencyID string, in AIRoleInput) (AIRole, error) {
