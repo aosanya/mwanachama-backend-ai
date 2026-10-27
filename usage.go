@@ -126,8 +126,12 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 		return Decision{}, err
 	}
 	al := accountLimits(a)
+	roleLimits, err := m.roleLimitsFor(ctx, agencyID, in)
+	if err != nil {
+		return Decision{}, err
+	}
 	for _, owner := range []string{"this AI role's", "this account's"} {
-		lim, roleID := in.RoleLimits, in.RoleID
+		lim, roleID := roleLimits, in.RoleID
 		if owner == "this account's" {
 			lim, roleID = al, ""
 		} else if in.RoleID == "" {
@@ -151,7 +155,7 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 			}
 		}
 	}
-	return Decision{Allowed: true, MaxTokens: lowerNonZero(al.TokensPerCall, in.RoleLimits.TokensPerCall)}, nil
+	return Decision{Allowed: true, MaxTokens: lowerNonZero(al.TokensPerCall, roleLimits.TokensPerCall)}, nil
 }
 
 func refusal(owner string, ls limitSpec) string {

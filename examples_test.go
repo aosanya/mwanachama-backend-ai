@@ -7,7 +7,7 @@ import (
 	ai "github.com/aosanya/mwanachama-backend-ai"
 )
 
-var allRoles = []string{"account", "account_key", "usage"}
+var allRoles = []string{"account", "account_key", "usage", "ai_role", "ai_role_revision"}
 
 func shippedSpecs(t *testing.T) []string {
 	t.Helper()

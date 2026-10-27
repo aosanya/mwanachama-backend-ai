@@ -223,6 +223,190 @@
           ]
         }
       ]
+    },
+    {
+      "role": "ai_role",
+      "description": "A named container for a system prompt: the agency's instructions for a seat, read live, followed by this role's own fine-tuning.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The opaque id of the owning agency, from the address. Never read from a request body.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "What the agency calls the AI role. Unique within one agency.",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "What the AI role is for."
+        },
+        {
+          "name": "fine_tuning",
+          "type": "text",
+          "description": "The agency's own additions to the prompt, at most 20000 characters. Required when the agency's instructions are switched off."
+        },
+        {
+          "name": "use_agency_instructions",
+          "type": "bool",
+          "description": "Whether the agency's instructions for the seat come first in the prompt. On unless switched off."
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "description": "Whether the AI role may be used.",
+          "required": true,
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "name": "tokens_per_call",
+          "type": "int",
+          "description": "The most tokens one call may use the AI role. Zero means none."
+        },
+        {
+          "name": "tokens_per_day",
+          "type": "int",
+          "description": "The most tokens it may use in a day the AI role. Zero means none."
+        },
+        {
+          "name": "tokens_per_month",
+          "type": "int",
+          "description": "The most tokens it may use in a month the AI role. Zero means none."
+        },
+        {
+          "name": "requests_per_day",
+          "type": "int",
+          "description": "The most requests it may make in a day the AI role. Zero means none."
+        },
+        {
+          "name": "requests_per_minute",
+          "type": "int",
+          "description": "The most requests it may make in a minute the AI role. Zero means none."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "When the AI role was added."
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "description": "When the AI role was last changed."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "agency_name",
+          "description": "One name once per agency.",
+          "fields": [
+            "agency_id",
+            "name"
+          ],
+          "unique": true
+        },
+        {
+          "name": "agency",
+          "description": "Listing one agency's AI roles.",
+          "fields": [
+            "agency_id"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "ai_role_revision",
+      "description": "The values an AI role held before a save of its fine-tuning, switch or limits.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The owning agency.",
+          "required": true
+        },
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "The AI role the revision belongs to.",
+          "required": true
+        },
+        {
+          "name": "fine_tuning",
+          "type": "text",
+          "description": "The fine-tuning before the save."
+        },
+        {
+          "name": "use_agency_instructions",
+          "type": "bool",
+          "description": "The switch before the save."
+        },
+        {
+          "name": "tokens_per_call",
+          "type": "int",
+          "description": "The most tokens one call may use the AI role held before the save. Zero means none."
+        },
+        {
+          "name": "tokens_per_day",
+          "type": "int",
+          "description": "The most tokens it may use in a day the AI role held before the save. Zero means none."
+        },
+        {
+          "name": "tokens_per_month",
+          "type": "int",
+          "description": "The most tokens it may use in a month the AI role held before the save. Zero means none."
+        },
+        {
+          "name": "requests_per_day",
+          "type": "int",
+          "description": "The most requests it may make in a day the AI role held before the save. Zero means none."
+        },
+        {
+          "name": "requests_per_minute",
+          "type": "int",
+          "description": "The most requests it may make in a minute the AI role held before the save. Zero means none."
+        },
+        {
+          "name": "saved_by",
+          "type": "string",
+          "description": "The opaque id of who saved, from the caller. Never read from a request body."
+        },
+        {
+          "name": "saved_at",
+          "type": "string",
+          "description": "When the save happened.",
+          "required": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "role_saved",
+          "description": "Listing one AI role's history.",
+          "fields": [
+            "agency_id",
+            "role_id",
+            "saved_at"
+          ]
+        }
+      ]
     }
   ]
 }

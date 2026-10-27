@@ -19,6 +19,11 @@ var Sentinels = map[string]error{
 	"ErrNoMasterKey":     ai.ErrNoMasterKey,
 	"ErrNoKey":           ai.ErrNoKey,
 	"ErrUnsupportedKind": ai.ErrUnsupportedKind,
+
+	"ErrRoleNotFound":      ai.ErrRoleNotFound,
+	"ErrInvalidRole":       ai.ErrInvalidRole,
+	"ErrDuplicateRoleName": ai.ErrDuplicateRoleName,
+	"ErrRevisionNotFound":  ai.ErrRevisionNotFound,
 }
 
 var AnonymousActions = []string{}

@@ -295,6 +295,203 @@
         }
       ],
       "status": 200
+    },
+    "create_ai_role": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/ai-roles",
+      "call": "CreateAIRole",
+      "action": "ai.role.create",
+      "tool": "ai_create_role",
+      "title": "Add AI role",
+      "description": "Add an AI role: a named system prompt made of the agency's instructions and its own fine-tuning.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 201
+    },
+    "list_ai_roles": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/ai-roles",
+      "call": "ListAIRoles",
+      "action": "ai.role.list",
+      "tool": "ai_list_roles",
+      "title": "List AI roles",
+      "description": "List one agency's AI roles.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_ai_role": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}",
+      "call": "GetAIRole",
+      "action": "ai.role.read",
+      "tool": "ai_get_role",
+      "title": "Read AI role",
+      "description": "Read one AI role.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_ai_role": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}",
+      "call": "UpdateAIRole",
+      "action": "ai.role.update",
+      "tool": "ai_update_role",
+      "title": "Change AI role",
+      "description": "Replace an AI role's settings. A change to the fine-tuning, the switch or a limit takes effect on the next resolve and is kept as a revision.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        },
+        {
+          "from": "caller",
+          "as": "saved_by",
+          "description": "Who saved, supplied by the mount. Never read from the request."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "delete_ai_role": {
+      "method": "DELETE",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}",
+      "call": "DeleteAIRole",
+      "action": "ai.role.delete",
+      "tool": "ai_delete_role",
+      "title": "Remove AI role",
+      "description": "Remove an AI role and its history.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_role_revisions": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}/revisions",
+      "call": "ListAIRoleRevisions",
+      "action": "ai.revision.list",
+      "tool": "ai_list_role_revisions",
+      "title": "List revisions",
+      "description": "List what an AI role held before each save, newest first.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "restore_role_revision": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}/revisions/{revisionID}/restore",
+      "call": "RestoreAIRoleRevision",
+      "action": "ai.revision.restore",
+      "tool": "ai_restore_role_revision",
+      "title": "Restore revision",
+      "description": "Put an earlier fine-tuning, switch and limits back. The restore is itself a saved edit.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        },
+        {
+          "from": "path",
+          "as": "revisionID",
+          "description": "The revision."
+        },
+        {
+          "from": "caller",
+          "as": "saved_by",
+          "description": "Who saved, supplied by the mount. Never read from the request."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
     }
   },
   "errors": {
@@ -304,6 +501,10 @@
     "ErrInvalidKey": 400,
     "ErrNoMasterKey": 409,
     "ErrNoKey": 404,
-    "ErrUnsupportedKind": 400
+    "ErrUnsupportedKind": 400,
+    "ErrRoleNotFound": 404,
+    "ErrInvalidRole": 400,
+    "ErrDuplicateRoleName": 409,
+    "ErrRevisionNotFound": 404
   }
 }

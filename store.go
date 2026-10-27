@@ -12,6 +12,8 @@ import (
 const (
 	roleAccount    = "account"
 	roleAccountKey = "account_key"
+	roleAIRole     = "ai_role"
+	roleRevision   = "ai_role_revision"
 )
 
 type store = specstore.Store

@@ -20,6 +20,18 @@
       "name": "usage",
       "table": "usages",
       "description": "Use counted by window."
+    },
+    {
+      "role": "ai_role",
+      "name": "ai_role",
+      "table": "ai_roles",
+      "description": "A named system prompt."
+    },
+    {
+      "role": "ai_role_revision",
+      "name": "ai_role_revision",
+      "table": "ai_role_revisions",
+      "description": "What a prompt held before a save."
     }
   ]
 }
