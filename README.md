@@ -19,6 +19,8 @@ Not built yet. This repository holds the requirements and the house rules; the c
 | Limits and usage | Five limits on every account and every AI role (tokens per call, per day and per month; requests per day and per minute), counted by role and day |
 | AI roles | A container for a system prompt: the agency's instructions for the seat, plus the manager's fine-tuning, used on the very next message |
 | Role mapping | Each AI role uses one account, and speaks for one agency role |
+| Provider agnostic | No provider is fixed: an account names its own kind, address and model; OpenAI-compatible first, others as adapters |
+| History | Every save of a role's instructions or limits is kept and can be restored |
 | Model gateway | An OpenAI-compatible endpoint that adds the account's key, counts the use and stops at the cap, so the agents never hold a model key |
 
 ## Licence

@@ -24,6 +24,8 @@ This repo follows the declared-domain standard that `mwanachama-backend-catalog`
 - **A key is written, never read.** No operation, route, MCP tool, log line, error or test failure message returns or prints an account's key. The key lives in its own object that no operation reaches, sealed at rest with AES-256-GCM under a master key the host supplies; with no master key the module refuses to store a key. Reading a key back is a method on the manager for the gateway only, never an operation.
 - **An AI role is a system prompt plus the account it uses and the agency role it speaks for.** The prompt is plain text with a size cap, edited in place, and used on the very next resolve.
 - **A limit is checked before a call and counted after it.** A refusal names the limit in one plain sentence and never shows a key.
+- **The module names no provider.** An account carries its own provider kind, address and model name; there is no default provider. The gateway reaches a provider through an adapter chosen by the kind.
+- **Edits are live at once and kept.** Every save of a role's fine-tuning, switch or limits is a revision with who and when; a restore is itself a revision.
 - **The module names no domain.** It knows opaque agency, member and role ids, nothing else.
 
 ## House rules
