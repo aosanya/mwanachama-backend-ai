@@ -19,6 +19,11 @@ func (m *accountManager) valid(a Account) error {
 	if !HasAdapter(a.Provider) {
 		return fmt.Errorf("%w: %q", ErrUnsupportedKind, a.Provider)
 	}
+	if m.baseURLPolicy != nil {
+		if err := m.baseURLPolicy(a.BaseURL); err != nil {
+			return fmt.Errorf("%w: %s", ErrInvalidAccount, err)
+		}
+	}
 	for _, n := range []*int{a.TokensPerCall, a.TokensPerDay, a.TokensPerMonth, a.RequestsPerDay, a.RequestsPerMinute, a.TokensPerWeek, a.RequestsPerWeek} {
 		if models.Count(n) < 0 {
 			return fmt.Errorf("%w: a limit cannot be negative", ErrInvalidAccount)
@@ -155,6 +160,7 @@ func (m *accountManager) SetAccountKey(ctx context.Context, agencyID, accountID 
 		return Account{}, fmt.Errorf("SetAccountKey: %w", err)
 	}
 	held.KeySet = true
+	held.LastTestResult, held.LastTestedAt = "", ""
 	held.UpdatedAt = row.UpdatedAt
 	if err := m.update(ctx, roleAccount, held.ID, held); err != nil {
 		return Account{}, fmt.Errorf("SetAccountKey: %w", err)

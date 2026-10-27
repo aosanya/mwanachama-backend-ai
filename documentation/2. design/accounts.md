@@ -10,11 +10,21 @@ The agency id is an opaque string the host supplies in the address (`/agencies/{
 
 `PUT .../key` replaces the key and answers the account with `key_set` true. Nothing returns it. The key is sealed with AES-256-GCM under a 32-byte master key passed with `WithMasterKey`; the stored value is a random nonce followed by the ciphertext, base64. With no master key `SetAccountKey` answers `ErrNoMasterKey` and stores nothing. The gateway reads a key through `KeyReader.AccountKey(ctx, agencyID, accountID)`, a Go method that no operation declares.
 
+Replacing a key clears `last_test_result` and `last_tested_at` on the account, in the stored row and in the answer, because a result belongs to the key it was measured with: the page shows an untested account until the new key is tested. A replacement that is refused (empty, too long, no master key) changes nothing, the old result included.
+
 Tests pin that the key is absent from every operation's output, every error and the log, on both the manager and the HTTP route table, and that the stored value is not the plain key.
 
 ## Provider agnostic
 
 `provider`, `base_url` and `model_name` are all required, with no default. A provider kind with no adapter (`HasAdapter`) is refused with `ErrUnsupportedKind` on create and on update. The first kind is `openai_compatible`.
+
+## Address policy
+
+The module names no provider and no host, so it cannot decide which addresses are safe. A host that mounts it where the address is called from its own network passes `WithBaseURLPolicy(func(baseURL string) error)`. `valid()` calls it on every write of an account: create, update and limits. A refusal answers `ErrInvalidAccount` followed by the policy's own sentence and stores nothing. With no policy any address is accepted, as before.
+
+The policy runs at write time only. An account stored before a policy tightened keeps its address until its next write, and that write is refused until the address is changed, including a limits change. A host that tightens a policy and needs the old addresses dead at once checks the stored address itself before the call.
+
+The policy receives the address and nothing else, so the key can never reach its error.
 
 ## Not built here
 

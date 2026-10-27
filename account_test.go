@@ -262,3 +262,116 @@ func TestSetAccountLimitsChangesOnlyLimits(t *testing.T) {
 		t.Fatalf("refused call changed limits: %+v", again)
 	}
 }
+
+func TestReplacingTheKeyClearsTheLastTestResult(t *testing.T) {
+	f := &fakeProber{out: ai.ProbeRefused}
+	m, _, _ := newTestManager(t, ai.WithMasterKey(master), ai.WithProber(f))
+	a := mustAdd(t, m, "ag-1", "main")
+	if _, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: "sk-OLD-1"}); err != nil {
+		t.Fatal(err)
+	}
+	tested, err := m.TestAccount(ctx, "ag-1", a.ID)
+	if err != nil || tested.LastTestResult != ai.TestRefused || tested.LastTestedAt == "" {
+		t.Fatalf("test: %+v %v", tested, err)
+	}
+	replaced, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: "sk-NEW-2"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replaced.LastTestResult != "" || replaced.LastTestedAt != "" {
+		t.Fatalf("answer still carries the old test: %+v", replaced)
+	}
+	held, _ := m.GetAccount(ctx, "ag-1", a.ID)
+	if held.LastTestResult != "" || held.LastTestedAt != "" || !held.KeySet {
+		t.Fatalf("stored account still carries the old test: %+v", held)
+	}
+}
+
+func TestRefusedKeyReplacementKeepsTheLastTestResult(t *testing.T) {
+	f := &fakeProber{out: ai.ProbeOK}
+	m, _, _ := newTestManager(t, ai.WithMasterKey(master), ai.WithProber(f))
+	a := mustAdd(t, m, "ag-1", "main")
+	m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: "sk-OLD-1"})
+	m.TestAccount(ctx, "ag-1", a.ID)
+	if _, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: " "}); !errors.Is(err, ai.ErrInvalidKey) {
+		t.Fatalf("got %v", err)
+	}
+	held, _ := m.GetAccount(ctx, "ag-1", a.ID)
+	if held.LastTestResult != ai.TestWorking || held.LastTestedAt == "" {
+		t.Fatalf("a refused key wiped the test: %+v", held)
+	}
+}
+
+func onlyHost(host string) ai.Option {
+	return ai.WithBaseURLPolicy(func(base string) error {
+		if !strings.HasPrefix(base, "https://"+host+"/") {
+			return errors.New("this address is not allowed")
+		}
+		return nil
+	})
+}
+
+func TestBaseURLPolicyRefusesAnAddressOnCreate(t *testing.T) {
+	m, _, _ := newTestManager(t, onlyHost("models.example.test"))
+	bad := validAccount("x")
+	bad.BaseURL = "https://elsewhere.example.test/v1"
+	if _, err := m.CreateAccount(ctx, "ag-1", bad); !errors.Is(err, ai.ErrInvalidAccount) {
+		t.Fatalf("got %v", err)
+	}
+	if list, _ := m.ListAccounts(ctx, "ag-1"); len(list) != 0 {
+		t.Fatalf("a refused account was stored: %+v", list)
+	}
+	if _, err := m.CreateAccount(ctx, "ag-1", validAccount("ok")); err != nil {
+		t.Fatalf("allowed address: %v", err)
+	}
+}
+
+func TestBaseURLPolicyRefusesAnAddressOnUpdate(t *testing.T) {
+	m, _, _ := newTestManager(t, onlyHost("models.example.test"))
+	a := mustAdd(t, m, "ag-1", "main")
+	bad := validAccount("main")
+	bad.BaseURL = "http://169.254.169.254/latest"
+	if _, err := m.UpdateAccount(ctx, "ag-1", a.ID, bad); !errors.Is(err, ai.ErrInvalidAccount) {
+		t.Fatalf("got %v", err)
+	}
+	held, _ := m.GetAccount(ctx, "ag-1", a.ID)
+	if held.BaseURL != "https://models.example.test/v1" {
+		t.Fatalf("a refused update changed the address: %q", held.BaseURL)
+	}
+}
+
+func TestBaseURLPolicyAnswerNamesTheReasonAndNotTheKey(t *testing.T) {
+	m, _, _ := newTestManager(t, ai.WithMasterKey(master), onlyHost("models.example.test"))
+	bad := validAccount("x")
+	bad.BaseURL = "https://elsewhere.example.test/v1"
+	_, err := m.CreateAccount(ctx, "ag-1", bad)
+	if err == nil || !strings.Contains(err.Error(), "this address is not allowed") || strings.Contains(err.Error(), syntheticKey) {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestWithoutABaseURLPolicyAnyAddressIsAccepted(t *testing.T) {
+	m, _, _ := newTestManager(t)
+	a := validAccount("x")
+	a.BaseURL = "http://localhost:9/v1"
+	if _, err := m.CreateAccount(ctx, "ag-1", a); err != nil {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestChangingLimitsIsRefusedWhileTheStoredAddressIsNotAllowed(t *testing.T) {
+	db := openDB(t)
+	s := testSpec(t)
+	if err := ai.Provision(db, s); err != nil {
+		t.Fatal(err)
+	}
+	open, _ := ai.NewManager(db, s)
+	a, err := open.CreateAccount(ctx, "ag-1", validAccount("main"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	strict, _ := ai.NewManager(db, s, onlyHost("other.example.test"))
+	if _, err := strict.SetAccountLimits(ctx, "ag-1", a.ID, ai.Limits{TokensPerDay: ip(10)}); !errors.Is(err, ai.ErrInvalidAccount) {
+		t.Fatalf("got %v", err)
+	}
+}

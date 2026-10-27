@@ -46,13 +46,18 @@ func WithMasterKey(master []byte) Option {
 	return func(m *accountManager) { m.master = master }
 }
 
+func WithBaseURLPolicy(policy func(baseURL string) error) Option {
+	return func(m *accountManager) { m.baseURLPolicy = policy }
+}
+
 type accountManager struct {
-	st     *store
-	now    func() string
-	master []byte
-	prober Prober
-	clock  func() time.Time
-	source InstructionSource
+	st            *store
+	now           func() string
+	master        []byte
+	prober        Prober
+	clock         func() time.Time
+	source        InstructionSource
+	baseURLPolicy func(string) error
 }
 
 type accountKeyRow struct {
