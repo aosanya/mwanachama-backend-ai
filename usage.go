@@ -46,9 +46,10 @@ func (m *accountManager) instant() time.Time {
 func windowStarts(t time.Time) map[string]string {
 	const layout = "2006-01-02T15:04:05Z"
 	return map[string]string{
-		"minute": t.Truncate(time.Minute).Format(layout),
-		"day":    time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC).Format(layout),
-		"month":  time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC).Format(layout),
+		"minute":   t.Truncate(time.Minute).Format(layout),
+		"day":      time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC).Format(layout),
+		"month":    time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC).Format(layout),
+		"weekFrom": time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -6).Format(layout),
 	}
 }
 
@@ -61,6 +62,9 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 	}
 	var last Usage
 	for window, start := range windowStarts(m.instant()) {
+		if window == "weekFrom" {
+			continue
+		}
 		id := fmt.Sprintf("%s|%s|%s|%s|%s", agencyID, in.AccountID, in.RoleID, window, start)
 		var n int64
 		q := m.st.Query(ctx, roleUsage).Where("id = ?", id)
@@ -93,8 +97,11 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 type tally struct{ Requests, Tokens int }
 
 func (m *accountManager) sum(ctx context.Context, agencyID, accountID, roleID, window string) (int, int, error) {
-	start := windowStarts(m.instant())[window]
-	q := m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window = ? AND window_start = ?", agencyID, accountID, window, start)
+	starts := windowStarts(m.instant())
+	q := m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window = ? AND window_start = ?", agencyID, accountID, window, starts[window])
+	if window == "week" {
+		q = m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window = ? AND window_start >= ?", agencyID, accountID, "day", starts["weekFrom"])
+	}
 	if roleID != "" {
 		q = q.Where("role_id = ?", roleID)
 	}
@@ -106,18 +113,20 @@ func (m *accountManager) sum(ctx context.Context, agencyID, accountID, roleID, w
 type limitSpec struct {
 	name, window string
 	tokens       bool
-	max          func(Limits) int
+	max          func(Limits) *int
 }
 
 var limitSpecs = []limitSpec{
-	{"requests per minute", "minute", false, func(l Limits) int { return l.RequestsPerMinute }},
-	{"requests per day", "day", false, func(l Limits) int { return l.RequestsPerDay }},
-	{"daily token", "day", true, func(l Limits) int { return l.TokensPerDay }},
-	{"monthly token", "month", true, func(l Limits) int { return l.TokensPerMonth }},
+	{"requests per minute", "minute", false, func(l Limits) *int { return l.RequestsPerMinute }},
+	{"requests per day", "day", false, func(l Limits) *int { return l.RequestsPerDay }},
+	{"daily token", "day", true, func(l Limits) *int { return l.TokensPerDay }},
+	{"monthly token", "month", true, func(l Limits) *int { return l.TokensPerMonth }},
+	{"weekly request", "week", false, func(l Limits) *int { return l.RequestsPerWeek }},
+	{"weekly token", "week", true, func(l Limits) *int { return l.TokensPerWeek }},
 }
 
 func accountLimits(a Account) Limits {
-	return Limits{TokensPerCall: a.TokensPerCall, TokensPerDay: a.TokensPerDay, TokensPerMonth: a.TokensPerMonth, RequestsPerDay: a.RequestsPerDay, RequestsPerMinute: a.RequestsPerMinute}
+	return Limits{TokensPerCall: a.TokensPerCall, TokensPerDay: a.TokensPerDay, TokensPerMonth: a.TokensPerMonth, RequestsPerDay: a.RequestsPerDay, RequestsPerMinute: a.RequestsPerMinute, TokensPerWeek: a.TokensPerWeek, RequestsPerWeek: a.RequestsPerWeek}
 }
 
 func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error) {
@@ -138,7 +147,7 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 			continue
 		}
 		for _, ls := range limitSpecs {
-			max := ls.max(lim)
+			max := models.Count(ls.max(lim))
 			if max == 0 {
 				continue
 			}
@@ -155,7 +164,7 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 			}
 		}
 	}
-	return Decision{Allowed: true, MaxTokens: lowerNonZero(al.TokensPerCall, roleLimits.TokensPerCall)}, nil
+	return Decision{Allowed: true, MaxTokens: lowerNonZero(models.Count(al.TokensPerCall), models.Count(roleLimits.TokensPerCall))}, nil
 }
 
 func refusal(owner string, ls limitSpec) string {
@@ -164,6 +173,10 @@ func refusal(owner string, ls limitSpec) string {
 		return owner + " per-minute request limit is reached"
 	case "requests per day":
 		return owner + " daily request limit is reached"
+	case "weekly request":
+		return owner + " weekly request limit is reached"
+	case "weekly token":
+		return owner + " weekly token limit is reached"
 	}
 	return owner + " " + ls.name + " limit is reached"
 }
@@ -198,7 +211,7 @@ func (m *accountManager) ListRoleUsage(ctx context.Context, agencyID, accountID,
 		if ls.tokens {
 			used = tok
 		}
-		rep.Counts = append(rep.Counts, models.LimitCount{Limit: ls.name, Max: ls.max(al), Used: used})
+		rep.Counts = append(rep.Counts, models.LimitCount{Limit: ls.name, Max: models.Count(ls.max(al)), Used: used})
 	}
 	return rep, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aosanya/mwanachama-backend-ai/models"
 
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
 )
@@ -75,7 +76,7 @@ func (m *accountManager) ResolveAIRole(ctx context.Context, agencyID, roleID str
 
 func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r AIRole, a Account) ([]LimitInForce, error) {
 	rl, al := r.Limits(), accountLimits(a)
-	out := []LimitInForce{{Limit: "tokens per call", Max: lowerNonZero(al.TokensPerCall, rl.TokensPerCall), Source: limitSource(al.TokensPerCall, rl.TokensPerCall)}}
+	out := []LimitInForce{{Limit: "tokens per call", Max: lowerNonZero(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall)), Source: limitSource(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall))}}
 	for _, ls := range limitSpecs {
 		req, tok, err := m.sum(ctx, agencyID, a.ID, r.ID, ls.window)
 		if err != nil {
@@ -85,7 +86,7 @@ func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r A
 		if ls.tokens {
 			used = tok
 		}
-		out = append(out, LimitInForce{Limit: ls.name, Max: lowerNonZero(ls.max(al), ls.max(rl)), Used: used, Source: limitSource(ls.max(al), ls.max(rl))})
+		out = append(out, LimitInForce{Limit: ls.name, Max: lowerNonZero(models.Count(ls.max(al)), models.Count(ls.max(rl))), Used: used, Source: limitSource(models.Count(ls.max(al)), models.Count(ls.max(rl)))})
 	}
 	return out, nil
 }

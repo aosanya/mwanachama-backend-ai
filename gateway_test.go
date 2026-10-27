@@ -51,7 +51,7 @@ func gatewaySetup(t *testing.T, fm *fakeModel, roleLimit int) (http.Handler, ai.
 		t.Fatal(err)
 	}
 	in := roleIn("scribe")
-	in.TokensPerCall = roleLimit
+	in.TokensPerCall = ip(roleLimit)
 	r := mustRole(t, m, "ag", in)
 	r, err = m.SetAIRoleMapping(ctx, "ag", r.ID, ai.AIRoleMappingInput{AccountID: acc.ID, AgencyRoleID: "ar-1"})
 	if err != nil {
@@ -85,7 +85,7 @@ func TestGatewayKeyReachesTheModelAndNeverTheCaller(t *testing.T) {
 func TestGatewayRefusesAtALimitBeforeAnythingLeaves(t *testing.T) {
 	fm := &fakeModel{reply: modelReply}
 	h, m, r, acc := gatewaySetup(t, fm, 0)
-	if _, err := m.SetAccountLimits(ctx, "ag", acc.ID, ai.Limits{RequestsPerDay: 1}); err != nil {
+	if _, err := m.SetAccountLimits(ctx, "ag", acc.ID, ai.Limits{RequestsPerDay: ip(1)}); err != nil {
 		t.Fatal(err)
 	}
 	if rec := post(h, `{"messages":[]}`); rec.Code != 200 {

@@ -70,27 +70,44 @@
         {
           "name": "tokens_per_call",
           "type": "int",
-          "description": "The most tokens one call may use. Zero means none."
+          "description": "The most tokens one call may use. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_day",
           "type": "int",
-          "description": "The most tokens the account may use in a day. Zero means none."
+          "description": "The most tokens the account may use in a day. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_month",
           "type": "int",
-          "description": "The most tokens the account may use in a month. Zero means none."
+          "description": "The most tokens the account may use in a month. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_day",
           "type": "int",
-          "description": "The most requests the account may make in a day. Zero means none."
+          "description": "The most requests the account may make in a day. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_minute",
           "type": "int",
-          "description": "The most requests the account may make in a minute. Zero means none."
+          "description": "The most requests the account may make in a minute. Null means it does not apply; zero means none.",
+          "nullable": true
+        },
+        {
+          "name": "tokens_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens used in a rolling seven days. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "requests_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
         },
         {
           "name": "created_at",
@@ -275,27 +292,44 @@
         {
           "name": "tokens_per_call",
           "type": "int",
-          "description": "The most tokens one call may use the AI role. Zero means none."
+          "description": "The most tokens one call may use the AI role. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_day",
           "type": "int",
-          "description": "The most tokens it may use in a day the AI role. Zero means none."
+          "description": "The most tokens it may use in a day the AI role. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_month",
           "type": "int",
-          "description": "The most tokens it may use in a month the AI role. Zero means none."
+          "description": "The most tokens it may use in a month the AI role. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_day",
           "type": "int",
-          "description": "The most requests it may make in a day the AI role. Zero means none."
+          "description": "The most requests it may make in a day the AI role. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_minute",
           "type": "int",
-          "description": "The most requests it may make in a minute the AI role. Zero means none."
+          "description": "The most requests it may make in a minute the AI role. Null means it does not apply; zero means none.",
+          "nullable": true
+        },
+        {
+          "name": "tokens_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens used in a rolling seven days. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "requests_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
         },
         {
           "name": "account_id",
@@ -380,27 +414,44 @@
         {
           "name": "tokens_per_call",
           "type": "int",
-          "description": "The most tokens one call may use the AI role held before the save. Zero means none."
+          "description": "The most tokens one call may use the AI role held before the save. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_day",
           "type": "int",
-          "description": "The most tokens it may use in a day the AI role held before the save. Zero means none."
+          "description": "The most tokens it may use in a day the AI role held before the save. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "tokens_per_month",
           "type": "int",
-          "description": "The most tokens it may use in a month the AI role held before the save. Zero means none."
+          "description": "The most tokens it may use in a month the AI role held before the save. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_day",
           "type": "int",
-          "description": "The most requests it may make in a day the AI role held before the save. Zero means none."
+          "description": "The most requests it may make in a day the AI role held before the save. Null means it does not apply; zero means none.",
+          "nullable": true
         },
         {
           "name": "requests_per_minute",
           "type": "int",
-          "description": "The most requests it may make in a minute the AI role held before the save. Zero means none."
+          "description": "The most requests it may make in a minute the AI role held before the save. Null means it does not apply; zero means none.",
+          "nullable": true
+        },
+        {
+          "name": "tokens_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens used in a rolling seven days. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "requests_per_week",
+          "type": "int",
+          "nullable": true,
+          "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
         },
         {
           "name": "saved_by",

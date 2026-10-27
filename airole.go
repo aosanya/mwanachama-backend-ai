@@ -56,8 +56,8 @@ func (m *accountManager) validRole(r AIRole) error {
 	if !r.UseAgencyInstructions && r.FineTuning == "" {
 		return fmt.Errorf("%w: the fine-tuning is required when the agency's instructions are switched off", ErrInvalidRole)
 	}
-	for _, n := range []int{r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth, r.RequestsPerDay, r.RequestsPerMinute} {
-		if n < 0 {
+	for _, n := range []*int{r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth, r.RequestsPerDay, r.RequestsPerMinute, r.TokensPerWeek, r.RequestsPerWeek} {
+		if models.Count(n) < 0 {
 			return fmt.Errorf("%w: a limit cannot be negative", ErrInvalidRole)
 		}
 	}

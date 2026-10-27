@@ -54,3 +54,12 @@ func validAccount(name string) ai.Account {
 		ModelName: "synthetic-model", Status: "enabled",
 	}
 }
+
+func ip(n int) *int { return &n }
+
+func iv(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
+}

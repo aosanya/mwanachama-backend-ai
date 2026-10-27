@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aosanya/mwanachama-backend-ai/models"
 	"strings"
 
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
@@ -18,8 +19,8 @@ func (m *accountManager) valid(a Account) error {
 	if !HasAdapter(a.Provider) {
 		return fmt.Errorf("%w: %q", ErrUnsupportedKind, a.Provider)
 	}
-	for _, n := range []int{a.TokensPerCall, a.TokensPerDay, a.TokensPerMonth, a.RequestsPerDay, a.RequestsPerMinute} {
-		if n < 0 {
+	for _, n := range []*int{a.TokensPerCall, a.TokensPerDay, a.TokensPerMonth, a.RequestsPerDay, a.RequestsPerMinute, a.TokensPerWeek, a.RequestsPerWeek} {
+		if models.Count(n) < 0 {
 			return fmt.Errorf("%w: a limit cannot be negative", ErrInvalidAccount)
 		}
 	}
@@ -83,6 +84,7 @@ func (m *accountManager) UpdateAccount(ctx context.Context, agencyID, accountID 
 	held.Name, held.Provider, held.BaseURL, held.ModelName, held.Status = in.Name, in.Provider, in.BaseURL, in.ModelName, in.Status
 	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
+	held.TokensPerWeek, held.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
 	if err := m.valid(held); err != nil {
 		return Account{}, err
 	}
@@ -105,6 +107,7 @@ func (m *accountManager) SetAccountLimits(ctx context.Context, agencyID, account
 	}
 	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
+	held.TokensPerWeek, held.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
 	if err := m.valid(held); err != nil {
 		return Account{}, err
 	}

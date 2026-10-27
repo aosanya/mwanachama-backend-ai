@@ -8,7 +8,7 @@ import (
 )
 
 func tunedFieldsDiffer(a, b AIRole) bool {
-	return a.FineTuning != b.FineTuning || a.UseAgencyInstructions != b.UseAgencyInstructions || a.Limits() != b.Limits()
+	return a.FineTuning != b.FineTuning || a.UseAgencyInstructions != b.UseAgencyInstructions || limitsDiffer(a.Limits(), b.Limits())
 }
 
 func (m *accountManager) saveRole(ctx context.Context, before, after AIRole, savedBy string) error {
@@ -82,4 +82,18 @@ func (m *accountManager) RestoreAIRoleRevision(ctx context.Context, agencyID, ro
 		return AIRole{}, fmt.Errorf("RestoreAIRoleRevision: %w", err)
 	}
 	return m.GetAIRole(ctx, agencyID, roleID)
+}
+
+func limitsDiffer(a, b Limits) bool {
+	pairs := [][2]*int{
+		{a.TokensPerCall, b.TokensPerCall}, {a.TokensPerDay, b.TokensPerDay}, {a.TokensPerMonth, b.TokensPerMonth},
+		{a.RequestsPerDay, b.RequestsPerDay}, {a.RequestsPerMinute, b.RequestsPerMinute},
+		{a.TokensPerWeek, b.TokensPerWeek}, {a.RequestsPerWeek, b.RequestsPerWeek},
+	}
+	for _, p := range pairs {
+		if (p[0] == nil) != (p[1] == nil) || (p[0] != nil && *p[0] != *p[1]) {
+			return true
+		}
+	}
+	return false
 }

@@ -10,11 +10,13 @@ type AIRole struct {
 	FineTuning            string `json:"fine_tuning"`
 	UseAgencyInstructions bool   `json:"use_agency_instructions"`
 	Status                string `json:"status"`
-	TokensPerCall         int    `json:"tokens_per_call"`
-	TokensPerDay          int    `json:"tokens_per_day"`
-	TokensPerMonth        int    `json:"tokens_per_month"`
-	RequestsPerDay        int    `json:"requests_per_day"`
-	RequestsPerMinute     int    `json:"requests_per_minute"`
+	TokensPerCall         *int   `json:"tokens_per_call"`
+	TokensPerDay          *int   `json:"tokens_per_day"`
+	TokensPerMonth        *int   `json:"tokens_per_month"`
+	RequestsPerDay        *int   `json:"requests_per_day"`
+	RequestsPerMinute     *int   `json:"requests_per_minute"`
+	TokensPerWeek         *int   `json:"tokens_per_week"`
+	RequestsPerWeek       *int   `json:"requests_per_week"`
 	AccountID             string `json:"account_id"`
 	AgencyRoleID          string `json:"agency_role_id"`
 	CreatedAt             string `json:"created_at"`
@@ -27,11 +29,13 @@ type AIRoleInput struct {
 	FineTuning            string `json:"fine_tuning"`
 	UseAgencyInstructions *bool  `json:"use_agency_instructions,omitempty"`
 	Status                string `json:"status"`
-	TokensPerCall         int    `json:"tokens_per_call"`
-	TokensPerDay          int    `json:"tokens_per_day"`
-	TokensPerMonth        int    `json:"tokens_per_month"`
-	RequestsPerDay        int    `json:"requests_per_day"`
-	RequestsPerMinute     int    `json:"requests_per_minute"`
+	TokensPerCall         *int   `json:"tokens_per_call"`
+	TokensPerDay          *int   `json:"tokens_per_day"`
+	TokensPerMonth        *int   `json:"tokens_per_month"`
+	RequestsPerDay        *int   `json:"requests_per_day"`
+	RequestsPerMinute     *int   `json:"requests_per_minute"`
+	TokensPerWeek         *int   `json:"tokens_per_week"`
+	RequestsPerWeek       *int   `json:"requests_per_week"`
 }
 
 type AIRoleRevision struct {
@@ -40,17 +44,26 @@ type AIRoleRevision struct {
 	RoleID                string `json:"role_id"`
 	FineTuning            string `json:"fine_tuning"`
 	UseAgencyInstructions bool   `json:"use_agency_instructions"`
-	TokensPerCall         int    `json:"tokens_per_call"`
-	TokensPerDay          int    `json:"tokens_per_day"`
-	TokensPerMonth        int    `json:"tokens_per_month"`
-	RequestsPerDay        int    `json:"requests_per_day"`
-	RequestsPerMinute     int    `json:"requests_per_minute"`
+	TokensPerCall         *int   `json:"tokens_per_call"`
+	TokensPerDay          *int   `json:"tokens_per_day"`
+	TokensPerMonth        *int   `json:"tokens_per_month"`
+	RequestsPerDay        *int   `json:"requests_per_day"`
+	RequestsPerMinute     *int   `json:"requests_per_minute"`
+	TokensPerWeek         *int   `json:"tokens_per_week"`
+	RequestsPerWeek       *int   `json:"requests_per_week"`
 	SavedBy               string `json:"saved_by"`
 	SavedAt               string `json:"saved_at"`
 }
 
+func Count(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
+}
+
 func (r AIRole) Limits() Limits {
-	return Limits{TokensPerCall: r.TokensPerCall, TokensPerDay: r.TokensPerDay, TokensPerMonth: r.TokensPerMonth, RequestsPerDay: r.RequestsPerDay, RequestsPerMinute: r.RequestsPerMinute}
+	return Limits{TokensPerCall: r.TokensPerCall, TokensPerDay: r.TokensPerDay, TokensPerMonth: r.TokensPerMonth, RequestsPerDay: r.RequestsPerDay, RequestsPerMinute: r.RequestsPerMinute, TokensPerWeek: r.TokensPerWeek, RequestsPerWeek: r.RequestsPerWeek}
 }
 
 type AIRoleMappingInput struct {

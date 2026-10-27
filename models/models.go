@@ -22,11 +22,13 @@ type Account struct {
 	KeySet            bool   `json:"key_set"`
 	LastTestResult    string `json:"last_test_result,omitempty"`
 	LastTestedAt      string `json:"last_tested_at,omitempty"`
-	TokensPerCall     int    `json:"tokens_per_call"`
-	TokensPerDay      int    `json:"tokens_per_day"`
-	TokensPerMonth    int    `json:"tokens_per_month"`
-	RequestsPerDay    int    `json:"requests_per_day"`
-	RequestsPerMinute int    `json:"requests_per_minute"`
+	TokensPerCall     *int   `json:"tokens_per_call"`
+	TokensPerDay      *int   `json:"tokens_per_day"`
+	TokensPerMonth    *int   `json:"tokens_per_month"`
+	RequestsPerDay    *int   `json:"requests_per_day"`
+	RequestsPerMinute *int   `json:"requests_per_minute"`
+	TokensPerWeek     *int   `json:"tokens_per_week"`
+	RequestsPerWeek   *int   `json:"requests_per_week"`
 	CreatedAt         string `json:"created_at"`
 	UpdatedAt         string `json:"updated_at"`
 }
@@ -36,11 +38,13 @@ type KeyInput struct {
 }
 
 type Limits struct {
-	TokensPerCall     int `json:"tokens_per_call"`
-	TokensPerDay      int `json:"tokens_per_day"`
-	TokensPerMonth    int `json:"tokens_per_month"`
-	RequestsPerDay    int `json:"requests_per_day"`
-	RequestsPerMinute int `json:"requests_per_minute"`
+	TokensPerCall     *int `json:"tokens_per_call"`
+	TokensPerDay      *int `json:"tokens_per_day"`
+	TokensPerMonth    *int `json:"tokens_per_month"`
+	RequestsPerDay    *int `json:"requests_per_day"`
+	RequestsPerMinute *int `json:"requests_per_minute"`
+	TokensPerWeek     *int `json:"tokens_per_week"`
+	RequestsPerWeek   *int `json:"requests_per_week"`
 }
 
 type Usage struct {

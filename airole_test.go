@@ -126,7 +126,7 @@ func TestEachEditAddsOneRevisionWithItsEditor(t *testing.T) {
 	if _, err := m.UpdateAIRole(ctx, "ag", r.ID, "alice", in); err != nil {
 		t.Fatal(err)
 	}
-	in.TokensPerDay = 10
+	in.TokensPerDay = ip(10)
 	if _, err := m.UpdateAIRole(ctx, "ag", r.ID, "bob", in); err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func TestEachEditAddsOneRevisionWithItsEditor(t *testing.T) {
 	for _, v := range revs {
 		by[v.SavedBy] = v
 	}
-	if by["alice"].FineTuning != "be brief" || by["bob"].FineTuning != "be long" || by["bob"].TokensPerDay != 0 {
+	if by["alice"].FineTuning != "be brief" || by["bob"].FineTuning != "be long" || iv(by["bob"].TokensPerDay) != 0 {
 		t.Fatalf("previous values wrong: %+v", by)
 	}
 }
@@ -184,17 +184,17 @@ func TestTheLowerOfRoleAndAccountWinsInEachLimit(t *testing.T) {
 		wantRefusal  bool
 		wantMaxToken int
 	}{
-		{"tokens per call, role lower", ai.Limits{TokensPerCall: 50}, ai.Limits{TokensPerCall: 100}, nil, false, 50},
-		{"tokens per call, account lower", ai.Limits{TokensPerCall: 100}, ai.Limits{TokensPerCall: 50}, nil, false, 50},
-		{"tokens per day, role lower", ai.Limits{TokensPerDay: 10}, ai.Limits{TokensPerDay: 1000}, use(1, 10, 0), true, 0},
-		{"tokens per day, account lower", ai.Limits{TokensPerDay: 1000}, ai.Limits{TokensPerDay: 10}, use(1, 10, 0), true, 0},
-		{"tokens per month, role lower", ai.Limits{TokensPerMonth: 10}, ai.Limits{TokensPerMonth: 1000}, use(1, 10, 0), true, 0},
-		{"tokens per month, account lower", ai.Limits{TokensPerMonth: 1000}, ai.Limits{TokensPerMonth: 10}, use(1, 10, 0), true, 0},
-		{"requests per day, role lower", ai.Limits{RequestsPerDay: 1}, ai.Limits{RequestsPerDay: 100}, use(1, 0, 0), true, 0},
-		{"requests per day, account lower", ai.Limits{RequestsPerDay: 100}, ai.Limits{RequestsPerDay: 1}, use(1, 0, 0), true, 0},
-		{"requests per minute, role lower", ai.Limits{RequestsPerMinute: 1}, ai.Limits{RequestsPerMinute: 100}, use(1, 0, 0), true, 0},
-		{"requests per minute, account lower", ai.Limits{RequestsPerMinute: 100}, ai.Limits{RequestsPerMinute: 1}, use(1, 0, 0), true, 0},
-		{"both higher stays allowed", ai.Limits{RequestsPerMinute: 100}, ai.Limits{RequestsPerMinute: 100}, use(1, 0, 0), false, 0},
+		{"tokens per call, role lower", ai.Limits{TokensPerCall: ip(50)}, ai.Limits{TokensPerCall: ip(100)}, nil, false, 50},
+		{"tokens per call, account lower", ai.Limits{TokensPerCall: ip(100)}, ai.Limits{TokensPerCall: ip(50)}, nil, false, 50},
+		{"tokens per day, role lower", ai.Limits{TokensPerDay: ip(10)}, ai.Limits{TokensPerDay: ip(1000)}, use(1, 10, 0), true, 0},
+		{"tokens per day, account lower", ai.Limits{TokensPerDay: ip(1000)}, ai.Limits{TokensPerDay: ip(10)}, use(1, 10, 0), true, 0},
+		{"tokens per month, role lower", ai.Limits{TokensPerMonth: ip(10)}, ai.Limits{TokensPerMonth: ip(1000)}, use(1, 10, 0), true, 0},
+		{"tokens per month, account lower", ai.Limits{TokensPerMonth: ip(1000)}, ai.Limits{TokensPerMonth: ip(10)}, use(1, 10, 0), true, 0},
+		{"requests per day, role lower", ai.Limits{RequestsPerDay: ip(1)}, ai.Limits{RequestsPerDay: ip(100)}, use(1, 0, 0), true, 0},
+		{"requests per day, account lower", ai.Limits{RequestsPerDay: ip(100)}, ai.Limits{RequestsPerDay: ip(1)}, use(1, 0, 0), true, 0},
+		{"requests per minute, role lower", ai.Limits{RequestsPerMinute: ip(1)}, ai.Limits{RequestsPerMinute: ip(100)}, use(1, 0, 0), true, 0},
+		{"requests per minute, account lower", ai.Limits{RequestsPerMinute: ip(100)}, ai.Limits{RequestsPerMinute: ip(1)}, use(1, 0, 0), true, 0},
+		{"both higher stays allowed", ai.Limits{RequestsPerMinute: ip(100)}, ai.Limits{RequestsPerMinute: ip(100)}, use(1, 0, 0), false, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -244,7 +244,7 @@ func TestALimitEditTakesEffectOnTheNextCheck(t *testing.T) {
 		t.Fatalf("before: %+v", d)
 	}
 	in := roleIn("scribe")
-	in.RequestsPerDay = 1
+	in.RequestsPerDay = ip(1)
 	m.UpdateAIRole(ctx, "ag", r.ID, "ed", in)
 	if d, _ := m.CheckLimits(ctx, "ag", ai.CheckInput{AccountID: acc.ID, RoleID: r.ID}); d.Allowed {
 		t.Fatalf("after: %+v", d)

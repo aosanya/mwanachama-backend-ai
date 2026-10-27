@@ -124,3 +124,27 @@ func TestToolsListAndKeyNeverReturned(t *testing.T) {
 		t.Fatal("another agency's account was changed")
 	}
 }
+
+func TestSetLimitsAcceptsNullAndWeekly(t *testing.T) {
+	cs := connect(t)
+	out, isErr := call(t, cs, "ai_create_account", map[string]any{"agencyID": "ag-1", "name": "weekly", "provider": "openai_compatible", "base_url": "https://m.example.test/v1", "model_name": "synthetic", "status": "enabled"})
+	if isErr {
+		t.Fatalf("create: %s", out)
+	}
+	var created struct {
+		StructuredContent struct {
+			ID string `json:"id"`
+		} `json:"structuredContent"`
+	}
+	_ = json.Unmarshal([]byte(out), &created)
+	args := map[string]any{"agencyID": "ag-1", "accountID": created.StructuredContent.ID, "tokens_per_day": nil, "requests_per_minute": nil, "tokens_per_week": 700, "requests_per_week": 40}
+	got, isErr := call(t, cs, "ai_set_limits", args)
+	if isErr {
+		t.Fatalf("set_limits: %s", got)
+	}
+	for _, want := range []string{`"tokens_per_week":700`, `"requests_per_week":40`, `"tokens_per_day":null`} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("missing %s in %s", want, got)
+		}
+	}
+}

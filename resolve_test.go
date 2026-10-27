@@ -19,12 +19,12 @@ func mappedRole(t *testing.T, m ai.Manager, agency, name, agencyRole string, rol
 		t.Fatal(err)
 	}
 	if accountLimit > 0 {
-		if _, err := m.SetAccountLimits(ctx, agency, acc.ID, ai.Limits{TokensPerCall: accountLimit, TokensPerDay: accountLimit}); err != nil {
+		if _, err := m.SetAccountLimits(ctx, agency, acc.ID, ai.Limits{TokensPerCall: ip(accountLimit), TokensPerDay: ip(accountLimit)}); err != nil {
 			t.Fatal(err)
 		}
 	}
 	in := roleIn(name)
-	in.TokensPerCall, in.TokensPerDay = roleLimit, roleLimit
+	in.TokensPerCall, in.TokensPerDay = ip(roleLimit), ip(roleLimit)
 	r := mustRole(t, m, agency, in)
 	r, err = m.SetAIRoleMapping(ctx, agency, r.ID, ai.AIRoleMappingInput{AccountID: acc.ID, AgencyRoleID: agencyRole})
 	if err != nil {
@@ -90,7 +90,7 @@ func TestLimitInForceIsTheLowerNonZero(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got.Limits) != 5 || got.Limits[0].Max != 200 || got.Limits[3].Max != 200 {
+	if len(got.Limits) != 7 || got.Limits[0].Max != 200 || got.Limits[3].Max != 200 {
 		t.Fatalf("limits: %+v", got.Limits)
 	}
 	r2, _ := mappedRole(t, m, "ag", "two", "ar-2", 100, 0)

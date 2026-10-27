@@ -18,6 +18,7 @@ func usageSetup(t *testing.T, lim ai.Limits) (ai.Manager, ai.Account, *clockBox)
 	in := validAccount("u")
 	in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth = lim.TokensPerCall, lim.TokensPerDay, lim.TokensPerMonth
 	in.RequestsPerDay, in.RequestsPerMinute = lim.RequestsPerDay, lim.RequestsPerMinute
+	in.TokensPerWeek, in.RequestsPerWeek = lim.TokensPerWeek, lim.RequestsPerWeek
 	a, err := m.CreateAccount(ctx, "ag-1", in)
 	if err != nil {
 		t.Fatal(err)
@@ -47,10 +48,10 @@ func TestCrossingCallIsTheFirstRefusedForEachLimit(t *testing.T) {
 		in   int
 		want string
 	}{
-		{ai.Limits{TokensPerDay: 100}, 60, "this account's daily token limit is reached"},
-		{ai.Limits{TokensPerMonth: 100}, 60, "this account's monthly token limit is reached"},
-		{ai.Limits{RequestsPerDay: 2}, 1, "this account's daily request limit is reached"},
-		{ai.Limits{RequestsPerMinute: 2}, 1, "this account's per-minute request limit is reached"},
+		{ai.Limits{TokensPerDay: ip(100)}, 60, "this account's daily token limit is reached"},
+		{ai.Limits{TokensPerMonth: ip(100)}, 60, "this account's monthly token limit is reached"},
+		{ai.Limits{RequestsPerDay: ip(2)}, 1, "this account's daily request limit is reached"},
+		{ai.Limits{RequestsPerMinute: ip(2)}, 1, "this account's per-minute request limit is reached"},
 	}
 	for _, c := range cases {
 		m, a, _ := usageSetup(t, c.lim)
@@ -71,11 +72,11 @@ func TestLowerOfRoleAndAccountWins(t *testing.T) {
 		in        int
 		want      string
 	}{
-		{ai.Limits{TokensPerDay: 1000}, ai.Limits{TokensPerDay: 10}, 10, "this AI role's daily token limit is reached"},
-		{ai.Limits{TokensPerMonth: 1000}, ai.Limits{TokensPerMonth: 10}, 10, "this AI role's monthly token limit is reached"},
-		{ai.Limits{RequestsPerDay: 100}, ai.Limits{RequestsPerDay: 1}, 1, "this AI role's daily request limit is reached"},
-		{ai.Limits{RequestsPerMinute: 100}, ai.Limits{RequestsPerMinute: 1}, 1, "this AI role's per-minute request limit is reached"},
-		{ai.Limits{TokensPerDay: 10}, ai.Limits{TokensPerDay: 1000}, 10, "this account's daily token limit is reached"},
+		{ai.Limits{TokensPerDay: ip(1000)}, ai.Limits{TokensPerDay: ip(10)}, 10, "this AI role's daily token limit is reached"},
+		{ai.Limits{TokensPerMonth: ip(1000)}, ai.Limits{TokensPerMonth: ip(10)}, 10, "this AI role's monthly token limit is reached"},
+		{ai.Limits{RequestsPerDay: ip(100)}, ai.Limits{RequestsPerDay: ip(1)}, 1, "this AI role's daily request limit is reached"},
+		{ai.Limits{RequestsPerMinute: ip(100)}, ai.Limits{RequestsPerMinute: ip(1)}, 1, "this AI role's per-minute request limit is reached"},
+		{ai.Limits{TokensPerDay: ip(10)}, ai.Limits{TokensPerDay: ip(1000)}, 10, "this account's daily token limit is reached"},
 	}
 	for _, c := range cases {
 		m, a, _ := usageSetup(t, c.acc)
@@ -84,11 +85,11 @@ func TestLowerOfRoleAndAccountWins(t *testing.T) {
 			t.Fatalf("want %q got %+v", c.want, d)
 		}
 	}
-	m, a, _ := usageSetup(t, ai.Limits{TokensPerCall: 500})
-	if d := check(t, m, "ag-1", a.ID, "r1", ai.Limits{TokensPerCall: 200}); !d.Allowed || d.MaxTokens != 200 {
+	m, a, _ := usageSetup(t, ai.Limits{TokensPerCall: ip(500)})
+	if d := check(t, m, "ag-1", a.ID, "r1", ai.Limits{TokensPerCall: ip(200)}); !d.Allowed || d.MaxTokens != 200 {
 		t.Fatalf("clamp: %+v", d)
 	}
-	if d := check(t, m, "ag-1", a.ID, "r1", ai.Limits{TokensPerCall: 900}); d.MaxTokens != 500 {
+	if d := check(t, m, "ag-1", a.ID, "r1", ai.Limits{TokensPerCall: ip(900)}); d.MaxTokens != 500 {
 		t.Fatalf("clamp: %+v", d)
 	}
 }
@@ -97,7 +98,7 @@ func TestRolloverCountersSurviveRestartAndAgenciesCountApart(t *testing.T) {
 	c := &clockBox{t: time.Date(2026, 10, 31, 23, 59, 30, 0, time.UTC)}
 	m, db, s := newTestManager(t, ai.WithClock(c.now))
 	in := validAccount("u")
-	in.TokensPerDay, in.TokensPerMonth = 10, 15
+	in.TokensPerDay, in.TokensPerMonth = ip(10), ip(15)
 	a, _ := m.CreateAccount(ctx, "ag-1", in)
 	b, _ := m.CreateAccount(ctx, "ag-2", in)
 	rec(t, m, "ag-1", a.ID, "", 10, 0)
@@ -117,7 +118,7 @@ func TestRolloverCountersSurviveRestartAndAgenciesCountApart(t *testing.T) {
 	}
 	rec(t, m2, "ag-1", a.ID, "", 10, 0)
 	rep, err := m2.ListUsage(ctx, "ag-1", a.ID)
-	if err != nil || len(rep.Counts) != 4 || rep.Counts[2].Used != 10 || rep.Counts[3].Used != 10 || rep.Counts[3].Max != 15 {
+	if err != nil || len(rep.Counts) != 6 || rep.Counts[2].Used != 10 || rep.Counts[3].Used != 10 || rep.Counts[3].Max != 15 {
 		t.Fatalf("%+v %v", rep, err)
 	}
 }

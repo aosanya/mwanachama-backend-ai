@@ -110,7 +110,7 @@
       "action": "ai.limits.set",
       "tool": "ai_set_limits",
       "title": "Set limits",
-      "description": "Replace only the account's five limits (zero means none). Name, provider, address, model and key are untouched.",
+      "description": "Replace only the account's seven limits (zero means none, null means the limit does not apply). Name, provider, address, model and key are untouched.",
       "args": [
         {
           "from": "path",

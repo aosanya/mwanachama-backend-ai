@@ -30,10 +30,10 @@ func TestAddChangeListRemove(t *testing.T) {
 		t.Fatalf("unexpected account %+v", a)
 	}
 	in := validAccount("renamed")
-	in.TokensPerDay = 5000
+	in.TokensPerDay = ip(5000)
 	in.Status = "disabled"
 	up, err := m.UpdateAccount(ctx, "ag-1", a.ID, in)
-	if err != nil || up.Name != "renamed" || up.TokensPerDay != 5000 || up.Status != "disabled" {
+	if err != nil || up.Name != "renamed" || iv(up.TokensPerDay) != 5000 || up.Status != "disabled" {
 		t.Fatalf("update: %+v %v", up, err)
 	}
 	list, _ := m.ListAccounts(ctx, "ag-1")
@@ -96,7 +96,7 @@ func TestKindWithoutAnAdapterIsRefusedOnCreateAndUpdate(t *testing.T) {
 func TestNegativeLimitIsRefused(t *testing.T) {
 	m, _, _ := newTestManager(t)
 	a := validAccount("x")
-	a.RequestsPerMinute = -1
+	a.RequestsPerMinute = ip(-1)
 	if _, err := m.CreateAccount(ctx, "ag-1", a); !errors.Is(err, ai.ErrInvalidAccount) {
 		t.Fatalf("got %v", err)
 	}
@@ -230,7 +230,7 @@ func TestSetAccountLimitsChangesOnlyLimits(t *testing.T) {
 	if _, err := m.SetAccountKey(ctx, "ag-1", made.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerCall: 1, TokensPerDay: 2, TokensPerMonth: 3, RequestsPerDay: 4, RequestsPerMinute: 5})
+	got, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerCall: ip(1), TokensPerDay: ip(2), TokensPerMonth: ip(3), RequestsPerDay: ip(4), RequestsPerMinute: ip(5)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +238,7 @@ func TestSetAccountLimitsChangesOnlyLimits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if read.TokensPerCall != 1 || read.TokensPerDay != 2 || read.TokensPerMonth != 3 || read.RequestsPerDay != 4 || read.RequestsPerMinute != 5 {
+	if iv(read.TokensPerCall) != 1 || iv(read.TokensPerDay) != 2 || iv(read.TokensPerMonth) != 3 || iv(read.RequestsPerDay) != 4 || iv(read.RequestsPerMinute) != 5 {
 		t.Fatalf("limits not stored: %+v", read)
 	}
 	if read.Name != made.Name || read.Provider != made.Provider || read.BaseURL != made.BaseURL || read.ModelName != made.ModelName || read.Status != made.Status || !read.KeySet {
@@ -251,14 +251,14 @@ func TestSetAccountLimitsChangesOnlyLimits(t *testing.T) {
 	if err != nil || key != syntheticKey {
 		t.Fatalf("key changed: %q %v", key, err)
 	}
-	if _, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerDay: -1}); !errors.Is(err, ai.ErrInvalidAccount) {
+	if _, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerDay: ip(-1)}); !errors.Is(err, ai.ErrInvalidAccount) {
 		t.Fatalf("negative: %v", err)
 	}
-	if _, err := m.SetAccountLimits(ctx, "ag-2", made.ID, ai.Limits{TokensPerDay: 9}); !errors.Is(err, ai.ErrAccountNotFound) {
+	if _, err := m.SetAccountLimits(ctx, "ag-2", made.ID, ai.Limits{TokensPerDay: ip(9)}); !errors.Is(err, ai.ErrAccountNotFound) {
 		t.Fatalf("other agency: %v", err)
 	}
 	again, _ := m.GetAccount(ctx, "ag-1", made.ID)
-	if again.TokensPerDay != 2 {
+	if iv(again.TokensPerDay) != 2 {
 		t.Fatalf("refused call changed limits: %+v", again)
 	}
 }
