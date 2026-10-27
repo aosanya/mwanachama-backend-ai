@@ -79,9 +79,13 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"GET /agencies/{agencyID}/accounts/{accountID}",
 		"POST /agencies/{agencyID}/accounts",
 		"POST /agencies/{agencyID}/accounts/{accountID}/test",
+		"GET /agencies/{agencyID}/accounts/{accountID}/usage",
+		"POST /agencies/{agencyID}/limits/check",
+		"POST /agencies/{agencyID}/usage",
 		"PUT /agencies/{agencyID}/accounts/{accountID}",
 		"PUT /agencies/{agencyID}/accounts/{accountID}/key",
 	}
+	sort.Strings(want)
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("got\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}

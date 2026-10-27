@@ -14,6 +14,12 @@
       "name": "account_key",
       "table": "account_keys",
       "description": "The sealed key of an account."
+    },
+    {
+      "role": "usage",
+      "name": "usage",
+      "table": "usages",
+      "description": "Use counted by window."
     }
   ]
 }

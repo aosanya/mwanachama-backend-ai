@@ -179,6 +179,82 @@
         }
       ],
       "status": 200
+    },
+    "record_usage": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/usage",
+      "call": "RecordUsage",
+      "action": "ai.usage.record",
+      "title": "Record use",
+      "description": "Count one call's requests and tokens.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 201
+    },
+    "check_limits": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/limits/check",
+      "call": "CheckLimits",
+      "action": "ai.limits.check",
+      "title": "Check limits",
+      "description": "Answer whether a call may go ahead, and the most tokens it may use.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
+    },
+    "list_usage": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/usage",
+      "call": "ListUsage",
+      "action": "ai.usage.list",
+      "title": "List use",
+      "description": "Each limit of an account beside its count.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
     }
   },
   "errors": {

@@ -34,6 +34,7 @@ type KeyReader interface {
 
 type Manager interface {
 	AccountManager
+	UsageManager
 	KeyReader
 }
 
@@ -48,6 +49,7 @@ type accountManager struct {
 	now    func() string
 	master []byte
 	prober Prober
+	clock  func() time.Time
 }
 
 type accountKeyRow struct {
@@ -64,6 +66,7 @@ func NewManager(db *gorm.DB, s *spec.Spec, opts ...Option) (Manager, error) {
 	st, err := newStore(db, s, map[string]any{
 		roleAccount:    models.Account{},
 		roleAccountKey: accountKeyRow{},
+		roleUsage:      models.Usage{},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("NewManager: %w", err)

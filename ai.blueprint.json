@@ -150,6 +150,79 @@
           "description": "When the key was last replaced."
         }
       ]
+    },
+    {
+      "role": "usage",
+      "description": "Requests and tokens used by one account, optionally for one AI role, in one minute, day or month window.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, derived from the window.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The agency that owns the account.",
+          "required": true
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The account used.",
+          "required": true
+        },
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "The AI role the use was for. Empty when none."
+        },
+        {
+          "name": "window",
+          "type": "enum",
+          "description": "The window kind.",
+          "required": true,
+          "values": [
+            "minute",
+            "day",
+            "month"
+          ]
+        },
+        {
+          "name": "window_start",
+          "type": "string",
+          "description": "UTC start of the window.",
+          "required": true
+        },
+        {
+          "name": "requests",
+          "type": "int",
+          "description": "Requests counted in the window."
+        },
+        {
+          "name": "tokens_in",
+          "type": "int",
+          "description": "Tokens sent in the window."
+        },
+        {
+          "name": "tokens_out",
+          "type": "int",
+          "description": "Tokens received in the window."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "account_window",
+          "description": "Summing an account's window.",
+          "fields": [
+            "agency_id",
+            "account_id",
+            "window",
+            "window_start"
+          ]
+        }
+      ]
     }
   ]
 }
