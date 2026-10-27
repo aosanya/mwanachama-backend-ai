@@ -1,0 +1,155 @@
+{
+  "module": "ai",
+  "objects": [
+    {
+      "role": "account",
+      "description": "An agency's standing with one model provider.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers. Minted when the row is written.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The opaque id of the agency that owns the account, supplied by the host from the address. Never read from a request body.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "What the agency calls the account. Unique within one agency.",
+          "required": true
+        },
+        {
+          "name": "provider",
+          "type": "string",
+          "description": "The provider kind, which decides the adapter used to reach the model. A kind with no adapter is refused when the account is saved. No default.",
+          "required": true
+        },
+        {
+          "name": "base_url",
+          "type": "string",
+          "description": "The address of the provider's API.",
+          "required": true
+        },
+        {
+          "name": "model_name",
+          "type": "string",
+          "description": "The model the account asks for, in the provider's own words.",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "description": "Whether the account may be used.",
+          "required": true,
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "name": "key_set",
+          "type": "bool",
+          "description": "Whether a key is stored for the account. The key itself is never shown."
+        },
+        {
+          "name": "last_test_result",
+          "type": "string",
+          "description": "The outcome of the last test of the account. Written by the test operation."
+        },
+        {
+          "name": "last_tested_at",
+          "type": "string",
+          "description": "When the account was last tested."
+        },
+        {
+          "name": "tokens_per_call",
+          "type": "int",
+          "description": "The most tokens one call may use. Zero means none."
+        },
+        {
+          "name": "tokens_per_day",
+          "type": "int",
+          "description": "The most tokens the account may use in a day. Zero means none."
+        },
+        {
+          "name": "tokens_per_month",
+          "type": "int",
+          "description": "The most tokens the account may use in a month. Zero means none."
+        },
+        {
+          "name": "requests_per_day",
+          "type": "int",
+          "description": "The most requests the account may make in a day. Zero means none."
+        },
+        {
+          "name": "requests_per_minute",
+          "type": "int",
+          "description": "The most requests the account may make in a minute. Zero means none."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "When the account was added."
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "description": "When the account was last changed."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "agency_name",
+          "description": "One name once per agency.",
+          "fields": [
+            "agency_id",
+            "name"
+          ],
+          "unique": true
+        },
+        {
+          "name": "agency",
+          "description": "Listing one agency's accounts.",
+          "fields": [
+            "agency_id"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "account_key",
+      "description": "The sealed key of an account, kept apart so that no operation can return it.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The id of the account this key belongs to.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The agency that owns the account.",
+          "required": true
+        },
+        {
+          "name": "sealed",
+          "type": "text",
+          "description": "The key sealed with AES-256-GCM under the host's master key. No operation reaches this object.",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "description": "When the key was last replaced."
+        }
+      ]
+    }
+  ]
+}

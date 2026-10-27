@@ -1,0 +1,19 @@
+{
+  "module": "ai",
+  "domain": "research",
+  "instance": "lab",
+  "objects": [
+    {
+      "role": "account",
+      "name": "connection",
+      "table": "connections",
+      "description": "A standing with one model provider."
+    },
+    {
+      "role": "account_key",
+      "name": "credential",
+      "table": "credentials",
+      "description": "The sealed key of an account."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "module": "ai",
+  "domain": "wakala",
+  "instance": "app",
+  "objects": [
+    {
+      "role": "account",
+      "name": "account",
+      "table": "accounts",
+      "description": "A standing with one model provider."
+    },
+    {
+      "role": "account_key",
+      "name": "account_key",
+      "table": "account_keys",
+      "description": "The sealed key of an account."
+    }
+  ]
+}

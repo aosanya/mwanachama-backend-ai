@@ -1,0 +1,167 @@
+{
+  "operations": {
+    "create_account": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/accounts",
+      "call": "CreateAccount",
+      "action": "ai.account.create",
+      "title": "Add account",
+      "description": "Add an account. The key is set separately and never returned.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 201
+    },
+    "list_accounts": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/accounts",
+      "call": "ListAccounts",
+      "action": "ai.account.list",
+      "title": "List accounts",
+      "description": "List one agency's accounts.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_account": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/accounts/{accountID}",
+      "call": "GetAccount",
+      "action": "ai.account.read",
+      "title": "Read account",
+      "description": "Read one account.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_account": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/accounts/{accountID}",
+      "call": "UpdateAccount",
+      "action": "ai.account.update",
+      "title": "Change account",
+      "description": "Replace an account's settings and limits. The key is untouched.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "delete_account": {
+      "method": "DELETE",
+      "path": "/agencies/{agencyID}/accounts/{accountID}",
+      "call": "DeleteAccount",
+      "action": "ai.account.delete",
+      "title": "Remove account",
+      "description": "Remove an account and its key.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 204
+    },
+    "set_account_key": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/key",
+      "call": "SetAccountKey",
+      "action": "ai.account.key_set",
+      "title": "Set key",
+      "description": "Replace the account's key. Written, never read back.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    }
+  },
+  "errors": {
+    "ErrAccountNotFound": 404,
+    "ErrInvalidAccount": 400,
+    "ErrDuplicateName": 409,
+    "ErrInvalidKey": 400,
+    "ErrNoMasterKey": 409,
+    "ErrNoKey": 404,
+    "ErrUnsupportedKind": 400
+  }
+}
