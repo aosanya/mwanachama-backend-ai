@@ -298,6 +298,16 @@
           "description": "The most requests it may make in a minute the AI role. Zero means none."
         },
         {
+          "name": "account_id",
+          "type": "string",
+          "description": "The opaque id of the account this AI role calls the model through. Empty means none is mapped."
+        },
+        {
+          "name": "agency_role_id",
+          "type": "string",
+          "description": "The opaque id of the agency role this AI role speaks for. Empty means none."
+        },
+        {
           "name": "created_at",
           "type": "string",
           "description": "When the AI role was added."
@@ -323,6 +333,14 @@
           "description": "Listing one agency's AI roles.",
           "fields": [
             "agency_id"
+          ]
+        },
+        {
+          "name": "agency_role",
+          "description": "Finding the AI role for an agency role.",
+          "fields": [
+            "agency_id",
+            "agency_role_id"
           ]
         }
       ]

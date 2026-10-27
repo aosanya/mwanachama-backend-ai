@@ -11,9 +11,12 @@ import (
 )
 
 type (
-	AIRole         = models.AIRole
-	AIRoleInput    = models.AIRoleInput
-	AIRoleRevision = models.AIRoleRevision
+	AIRole             = models.AIRole
+	AIRoleInput        = models.AIRoleInput
+	AIRoleRevision     = models.AIRoleRevision
+	AIRoleMappingInput = models.AIRoleMappingInput
+	Resolution         = models.Resolution
+	LimitInForce       = models.LimitInForce
 )
 
 type RoleManager interface {
@@ -25,6 +28,9 @@ type RoleManager interface {
 	ListAIRoleRevisions(ctx context.Context, agencyID, roleID string) ([]AIRoleRevision, error)
 	RestoreAIRoleRevision(ctx context.Context, agencyID, roleID, revisionID, savedBy string) (AIRole, error)
 	Instructions(ctx context.Context, agencyID, roleID string) (string, error)
+	SetAIRoleMapping(ctx context.Context, agencyID, roleID string, in AIRoleMappingInput) (AIRole, error)
+	ResolveAIRole(ctx context.Context, agencyID, roleID string) (Resolution, error)
+	ResolveAgencyRole(ctx context.Context, agencyID, agencyRoleID string) (Resolution, error)
 }
 
 type InstructionSource interface {

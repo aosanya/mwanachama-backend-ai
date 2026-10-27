@@ -492,6 +492,88 @@
         }
       ],
       "status": 200
+    },
+    "set_ai_role_mapping": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}/mapping",
+      "call": "SetAIRoleMapping",
+      "action": "ai.role.map",
+      "tool": "ai_map_role",
+      "title": "Map AI role",
+      "description": "Set the account an AI role calls the model through and the agency role it speaks for. The account must belong to the same agency. An empty id clears the mapping.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "resolve_ai_role": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}/resolve",
+      "call": "ResolveAIRole",
+      "action": "ai.role.resolve",
+      "tool": "ai_resolve_role",
+      "title": "Resolve AI role",
+      "description": "The prompt, the account without its key, the limit in force for each of the five and the count so far. A role with no account says so in one line.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "description": "The AI role."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "resolve_agency_role": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/agency-roles/{agencyRoleID}/resolve",
+      "call": "ResolveAgencyRole",
+      "action": "ai.role.resolve_agency_role",
+      "tool": "ai_resolve_agency_role",
+      "title": "Resolve by agency role",
+      "description": "Resolve the AI role that speaks for an agency role. The result is the same as resolving the AI role by its own id.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "agencyRoleID",
+          "description": "The agency role."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
     }
   },
   "errors": {

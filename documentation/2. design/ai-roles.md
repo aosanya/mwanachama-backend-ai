@@ -15,3 +15,9 @@ An AI role is a named container for a system prompt, per agency. `ai_role` holds
 A save that changes the fine-tuning, the switch or a limit adds one revision holding the previous values, the editor (`saved_by`, bound from the caller) and the time. A restore copies a revision back and is itself a saved edit, so it adds a revision. Edits to name, description or status add none.
 
 Not here: the account and agency-role mapping, and role resolution (HS126).
+
+## Mapping and resolving (HS126)
+
+An AI role carries `account_id` and `agency_role_id`, both opaque. `ai_map_role` sets them together; the account must belong to the same agency, otherwise the account is answered as not found. An empty id clears the mapping.
+
+`ai_resolve_role` (by AI role id) and `ai_resolve_agency_role` (by agency role id) return the prompt from `Instructions`, the account without its key, and five limits in force: the lower non-zero of the role's and the account's, with the role's own count so far for each window. Tokens per call has no count. A role with no account, or whose account was removed, returns the line "no account is mapped" and no account or limits. The key is never part of a resolution; only `KeyReader` reaches it.

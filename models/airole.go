@@ -15,6 +15,8 @@ type AIRole struct {
 	TokensPerMonth        int    `json:"tokens_per_month"`
 	RequestsPerDay        int    `json:"requests_per_day"`
 	RequestsPerMinute     int    `json:"requests_per_minute"`
+	AccountID             string `json:"account_id"`
+	AgencyRoleID          string `json:"agency_role_id"`
 	CreatedAt             string `json:"created_at"`
 	UpdatedAt             string `json:"updated_at"`
 }
@@ -49,4 +51,24 @@ type AIRoleRevision struct {
 
 func (r AIRole) Limits() Limits {
 	return Limits{TokensPerCall: r.TokensPerCall, TokensPerDay: r.TokensPerDay, TokensPerMonth: r.TokensPerMonth, RequestsPerDay: r.RequestsPerDay, RequestsPerMinute: r.RequestsPerMinute}
+}
+
+type AIRoleMappingInput struct {
+	AccountID    string `json:"account_id"`
+	AgencyRoleID string `json:"agency_role_id"`
+}
+
+type LimitInForce struct {
+	Limit string `json:"limit"`
+	Max   int    `json:"max"`
+	Used  int    `json:"used"`
+}
+
+type Resolution struct {
+	AIRoleID     string         `json:"ai_role_id"`
+	AgencyRoleID string         `json:"agency_role_id"`
+	Instructions string         `json:"instructions"`
+	Account      *Account       `json:"account,omitempty"`
+	Limits       []LimitInForce `json:"limits,omitempty"`
+	Message      string         `json:"message,omitempty"`
 }
