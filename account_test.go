@@ -219,3 +219,46 @@ func TestKeyNeverAppearsInAnyOutputErrorOrLog(t *testing.T) {
 		}
 	}
 }
+
+func TestSetAccountLimitsChangesOnlyLimits(t *testing.T) {
+	m, _, _ := newTestManager(t, ai.WithMasterKey(master))
+	ctx := context.Background()
+	made, err := m.CreateAccount(ctx, "ag-1", validAccount("main"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.SetAccountKey(ctx, "ag-1", made.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerCall: 1, TokensPerDay: 2, TokensPerMonth: 3, RequestsPerDay: 4, RequestsPerMinute: 5})
+	if err != nil {
+		t.Fatal(err)
+	}
+	read, err := m.GetAccount(ctx, "ag-1", made.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if read.TokensPerCall != 1 || read.TokensPerDay != 2 || read.TokensPerMonth != 3 || read.RequestsPerDay != 4 || read.RequestsPerMinute != 5 {
+		t.Fatalf("limits not stored: %+v", read)
+	}
+	if read.Name != made.Name || read.Provider != made.Provider || read.BaseURL != made.BaseURL || read.ModelName != made.ModelName || read.Status != made.Status || !read.KeySet {
+		t.Fatalf("something besides limits changed: %+v", read)
+	}
+	if got.ID != made.ID {
+		t.Fatalf("returned %+v", got)
+	}
+	key, err := m.AccountKey(ctx, "ag-1", made.ID)
+	if err != nil || key != syntheticKey {
+		t.Fatalf("key changed: %q %v", key, err)
+	}
+	if _, err := m.SetAccountLimits(ctx, "ag-1", made.ID, ai.Limits{TokensPerDay: -1}); !errors.Is(err, ai.ErrInvalidAccount) {
+		t.Fatalf("negative: %v", err)
+	}
+	if _, err := m.SetAccountLimits(ctx, "ag-2", made.ID, ai.Limits{TokensPerDay: 9}); !errors.Is(err, ai.ErrAccountNotFound) {
+		t.Fatalf("other agency: %v", err)
+	}
+	again, _ := m.GetAccount(ctx, "ag-1", made.ID)
+	if again.TokensPerDay != 2 {
+		t.Fatalf("refused call changed limits: %+v", again)
+	}
+}

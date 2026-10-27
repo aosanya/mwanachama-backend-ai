@@ -98,6 +98,23 @@ func (m *accountManager) UpdateAccount(ctx context.Context, agencyID, accountID 
 	return held, nil
 }
 
+func (m *accountManager) SetAccountLimits(ctx context.Context, agencyID, accountID string, in Limits) (Account, error) {
+	held, err := m.GetAccount(ctx, agencyID, accountID)
+	if err != nil {
+		return Account{}, err
+	}
+	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
+	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
+	if err := m.valid(held); err != nil {
+		return Account{}, err
+	}
+	held.UpdatedAt = m.now()
+	if err := m.update(ctx, roleAccount, held.ID, held); err != nil {
+		return Account{}, fmt.Errorf("SetAccountLimits: %w", err)
+	}
+	return held, nil
+}
+
 func (m *accountManager) DeleteAccount(ctx context.Context, agencyID, accountID string) (Account, error) {
 	held, err := m.GetAccount(ctx, agencyID, accountID)
 	if err != nil {

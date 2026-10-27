@@ -84,6 +84,7 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"POST /agencies/{agencyID}/usage",
 		"PUT /agencies/{agencyID}/accounts/{accountID}",
 		"PUT /agencies/{agencyID}/accounts/{accountID}/key",
+		"PUT /agencies/{agencyID}/accounts/{accountID}/limits",
 	}
 	sort.Strings(want)
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
@@ -143,4 +144,27 @@ func between(s, a, b string) string {
 	}
 	s = s[i+len(a):]
 	return s[:strings.Index(s, b)]
+}
+
+func TestSetLimitsRoute(t *testing.T) {
+	srv := newServer(t)
+	_, body := do(t, srv, "POST", "/agencies/ag-1/accounts", `{"name":"main","provider":"openai_compatible","base_url":"https://m.example.test/v1","model_name":"synthetic","status":"enabled"}`)
+	id := between(body, `"id":"`, `"`)
+	code, out := do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/limits", `{"tokens_per_call":7,"tokens_per_day":8,"tokens_per_month":9,"requests_per_day":10,"requests_per_minute":11}`)
+	if code != 200 || !strings.Contains(out, `"tokens_per_month":9`) || !strings.Contains(out, `"name":"main"`) {
+		t.Fatalf("%d %s", code, out)
+	}
+	if code, _ := do(t, srv, "PUT", "/agencies/ag-2/accounts/"+id+"/limits", `{"tokens_per_day":1}`); code != 404 {
+		t.Fatalf("other agency got %d", code)
+	}
+	if code, _ := do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/limits", `{"name":"renamed"}`); code == 200 {
+		t.Fatalf("a body naming more than limits was accepted")
+	}
+	if code, _ := do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/limits", `{"tokens_per_day":-1}`); code != 400 {
+		t.Fatalf("negative got %d", code)
+	}
+	_, got := do(t, srv, "GET", "/agencies/ag-1/accounts/"+id, "")
+	if !strings.Contains(got, `"tokens_per_day":8`) {
+		t.Fatalf("refusals changed limits: %s", got)
+	}
 }

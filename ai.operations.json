@@ -5,6 +5,7 @@
       "path": "/agencies/{agencyID}/accounts",
       "call": "CreateAccount",
       "action": "ai.account.create",
+      "tool": "ai_create_account",
       "title": "Add account",
       "description": "Add an account. The key is set separately and never returned.",
       "args": [
@@ -30,6 +31,7 @@
       "path": "/agencies/{agencyID}/accounts",
       "call": "ListAccounts",
       "action": "ai.account.list",
+      "tool": "ai_list_accounts",
       "title": "List accounts",
       "description": "List one agency's accounts.",
       "args": [
@@ -50,6 +52,7 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}",
       "call": "GetAccount",
       "action": "ai.account.read",
+      "tool": "ai_get_account",
       "title": "Read account",
       "description": "Read one account.",
       "args": [
@@ -75,8 +78,39 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}",
       "call": "UpdateAccount",
       "action": "ai.account.update",
+      "tool": "ai_update_account",
       "title": "Change account",
       "description": "Replace an account's settings and limits. The key is untouched.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "set_limits": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/limits",
+      "call": "SetAccountLimits",
+      "action": "ai.limits.set",
+      "tool": "ai_set_limits",
+      "title": "Set limits",
+      "description": "Replace only the account's five limits (zero means none). Name, provider, address, model and key are untouched.",
       "args": [
         {
           "from": "path",
@@ -104,6 +138,7 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}",
       "call": "DeleteAccount",
       "action": "ai.account.delete",
+      "tool": "ai_delete_account",
       "title": "Remove account",
       "description": "Remove an account and its key.",
       "args": [
@@ -130,6 +165,7 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}/key",
       "call": "SetAccountKey",
       "action": "ai.account.key_set",
+      "tool": "ai_set_account_key",
       "title": "Set key",
       "description": "Replace the account's key. Written, never read back.",
       "args": [
@@ -159,6 +195,7 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}/test",
       "call": "TestAccount",
       "action": "ai.account.test",
+      "tool": "ai_test_account",
       "title": "Test account",
       "description": "Send one short request with the account's key and store whether it worked. Nothing the model answered and no key is returned.",
       "args": [
@@ -185,6 +222,7 @@
       "path": "/agencies/{agencyID}/usage",
       "call": "RecordUsage",
       "action": "ai.usage.record",
+      "tool": "ai_record_usage",
       "title": "Record use",
       "description": "Count one call's requests and tokens.",
       "args": [
@@ -210,6 +248,7 @@
       "path": "/agencies/{agencyID}/limits/check",
       "call": "CheckLimits",
       "action": "ai.limits.check",
+      "tool": "ai_check_limits",
       "title": "Check limits",
       "description": "Answer whether a call may go ahead, and the most tokens it may use.",
       "args": [
@@ -235,6 +274,7 @@
       "path": "/agencies/{agencyID}/accounts/{accountID}/usage",
       "call": "ListUsage",
       "action": "ai.usage.list",
+      "tool": "ai_list_usage",
       "title": "List use",
       "description": "Each limit of an account beside its count.",
       "args": [
