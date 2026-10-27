@@ -11,10 +11,6 @@ import (
 
 const maxKeyBytes = 4096
 
-var adapters = map[string]bool{"openai_compatible": true}
-
-func HasAdapter(kind string) bool { return adapters[kind] }
-
 func (m *accountManager) valid(a Account) error {
 	if err := m.checks(roleAccount, a, ErrInvalidAccount); err != nil {
 		return err

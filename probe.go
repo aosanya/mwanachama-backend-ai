@@ -1,11 +1,8 @@
 package ai
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -36,30 +33,8 @@ type httpProber struct{ client *http.Client }
 func NewHTTPProber() Prober { return httpProber{client: &http.Client{Timeout: 20 * time.Second}} }
 
 func (p httpProber) Probe(ctx context.Context, a Account, key string) ProbeOutcome {
-	body, _ := json.Marshal(map[string]any{
-		"model":      a.ModelName,
-		"max_tokens": 8,
-		"messages":   []map[string]string{{"role": "user", "content": probePrompt}},
-	})
-	url := strings.TrimRight(a.BaseURL, "/") + "/chat/completions"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
-	if err != nil {
-		return ProbeUnreached
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+key)
-	resp, err := p.client.Do(req)
-	if err != nil {
-		return ProbeUnreached
-	}
-	defer resp.Body.Close()
-	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
-		return ProbeRefused
-	case resp.StatusCode >= 200 && resp.StatusCode < 300:
-		return ProbeOK
-	}
-	return ProbeError
+	_, out := Call(ctx, p.client, a, key, Request{Prompt: probePrompt, MaxTokens: 8})
+	return out
 }
 
 func WithProber(p Prober) Option {

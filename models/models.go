@@ -1,6 +1,10 @@
 package models
 
-const ProviderOpenAICompatible = "openai_compatible"
+const (
+	ProviderOpenAICompatible = "openai_compatible"
+	ProviderAnthropic        = "anthropic"
+	ProviderGemini           = "gemini"
+)
 
 const (
 	StatusEnabled  = "enabled"
