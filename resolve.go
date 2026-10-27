@@ -53,6 +53,9 @@ func (m *accountManager) ResolveAIRole(ctx context.Context, agencyID, roleID str
 	if out.Instructions, err = m.Instructions(ctx, agencyID, roleID); err != nil {
 		return Resolution{}, err
 	}
+	if out.Parts, err = m.instructionParts(ctx, agencyID, r); err != nil {
+		return Resolution{}, err
+	}
 	if r.AccountID == "" {
 		out.Message = noAccountMapped
 		return out, nil
@@ -72,7 +75,7 @@ func (m *accountManager) ResolveAIRole(ctx context.Context, agencyID, roleID str
 
 func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r AIRole, a Account) ([]LimitInForce, error) {
 	rl, al := r.Limits(), accountLimits(a)
-	out := []LimitInForce{{Limit: "tokens per call", Max: lowerNonZero(al.TokensPerCall, rl.TokensPerCall)}}
+	out := []LimitInForce{{Limit: "tokens per call", Max: lowerNonZero(al.TokensPerCall, rl.TokensPerCall), Source: limitSource(al.TokensPerCall, rl.TokensPerCall)}}
 	for _, ls := range limitSpecs {
 		req, tok, err := m.sum(ctx, agencyID, a.ID, r.ID, ls.window)
 		if err != nil {
@@ -82,7 +85,17 @@ func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r A
 		if ls.tokens {
 			used = tok
 		}
-		out = append(out, LimitInForce{Limit: ls.name, Max: lowerNonZero(ls.max(al), ls.max(rl)), Used: used})
+		out = append(out, LimitInForce{Limit: ls.name, Max: lowerNonZero(ls.max(al), ls.max(rl)), Used: used, Source: limitSource(ls.max(al), ls.max(rl))})
 	}
 	return out, nil
+}
+
+func limitSource(account, role int) string {
+	switch {
+	case account == 0 && role == 0:
+		return "none"
+	case account != 0 && (role == 0 || account < role):
+		return "account"
+	}
+	return "role"
 }

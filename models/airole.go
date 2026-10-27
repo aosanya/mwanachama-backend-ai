@@ -59,16 +59,23 @@ type AIRoleMappingInput struct {
 }
 
 type LimitInForce struct {
-	Limit string `json:"limit"`
-	Max   int    `json:"max"`
-	Used  int    `json:"used"`
+	Limit  string `json:"limit"`
+	Max    int    `json:"max"`
+	Used   int    `json:"used"`
+	Source string `json:"source"`
+}
+
+type InstructionPart struct {
+	Source string `json:"source"`
+	Text   string `json:"text"`
 }
 
 type Resolution struct {
-	AIRoleID     string         `json:"ai_role_id"`
-	AgencyRoleID string         `json:"agency_role_id"`
-	Instructions string         `json:"instructions"`
-	Account      *Account       `json:"account,omitempty"`
-	Limits       []LimitInForce `json:"limits,omitempty"`
-	Message      string         `json:"message,omitempty"`
+	AIRoleID     string            `json:"ai_role_id"`
+	AgencyRoleID string            `json:"agency_role_id"`
+	Instructions string            `json:"instructions"`
+	Parts        []InstructionPart `json:"parts"`
+	Account      *Account          `json:"account,omitempty"`
+	Limits       []LimitInForce    `json:"limits,omitempty"`
+	Message      string            `json:"message,omitempty"`
 }

@@ -17,6 +17,7 @@ type (
 	AIRoleMappingInput = models.AIRoleMappingInput
 	Resolution         = models.Resolution
 	LimitInForce       = models.LimitInForce
+	InstructionPart    = models.InstructionPart
 )
 
 type RoleManager interface {
@@ -35,6 +36,10 @@ type RoleManager interface {
 
 type InstructionSource interface {
 	AgencyInstructions(ctx context.Context, agencyID, roleID string) (string, error)
+}
+
+type PartsSource interface {
+	AgencyInstructionParts(ctx context.Context, agencyID, roleID string) ([]InstructionPart, error)
 }
 
 func WithInstructionSource(src InstructionSource) Option {

@@ -20,7 +20,7 @@ Not here: the account and agency-role mapping, and role resolution (HS126).
 
 An AI role carries `account_id` and `agency_role_id`, both opaque. `ai_map_role` sets them together; the account must belong to the same agency, otherwise the account is answered as not found. An empty id clears the mapping.
 
-`ai_resolve_role` (by AI role id) and `ai_resolve_agency_role` (by agency role id) return the prompt from `Instructions`, the account without its key, and five limits in force: the lower non-zero of the role's and the account's, with the role's own count so far for each window. Tokens per call has no count. A role with no account, or whose account was removed, returns the line "no account is mapped" and no account or limits. The key is never part of a resolution; only `KeyReader` reaches it.
+`ai_resolve_role` (by AI role id) and `ai_resolve_agency_role` (by agency role id) return the prompt from `Instructions`, the account without its key, the prompt's `parts` (a list of `{source, text}`; sources `seat_description`, `objectives`, `values_rules`, `work_item_instructions` when the instruction source also implements `PartsSource`, otherwise one `agency` part from the whole agency text, then `fine_tuning` for the role's own text; empty parts are left out) and five limits in force: the lower non-zero of the role's and the account's, each with a `source` of `role`, `account` (a tie reads `role`) or `none` when both are zero, with the role's own count so far for each window. Tokens per call has no count. A role with no account, or whose account was removed, returns the line "no account is mapped" and no account or limits. The key is never part of a resolution; only `KeyReader` reaches it.
 
 ## The model gateway (HS127)
 

@@ -530,7 +530,7 @@
       "action": "ai.role.resolve",
       "tool": "ai_resolve_role",
       "title": "Resolve AI role",
-      "description": "The prompt, the account without its key, the limit in force for each of the five and the count so far. A role with no account says so in one line.",
+      "description": "The prompt, its parts by source (seat_description, objectives, values_rules, work_item_instructions, agency, fine_tuning), the account without its key, the limit in force for each of the five with whether the role or the account sets it, and the count so far. A role with no account says so in one line.",
       "args": [
         {
           "from": "path",
@@ -556,7 +556,7 @@
       "action": "ai.role.resolve_agency_role",
       "tool": "ai_resolve_agency_role",
       "title": "Resolve by agency role",
-      "description": "Resolve the AI role that speaks for an agency role. The result is the same as resolving the AI role by its own id.",
+      "description": "Resolve the AI role that speaks for an agency role. The result, parts and limit sources included, is the same as resolving the AI role by its own id.",
       "args": [
         {
           "from": "path",
