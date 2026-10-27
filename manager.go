@@ -25,6 +25,7 @@ type AccountManager interface {
 	UpdateAccount(ctx context.Context, agencyID, accountID string, in Account) (Account, error)
 	DeleteAccount(ctx context.Context, agencyID, accountID string) (Account, error)
 	SetAccountKey(ctx context.Context, agencyID, accountID string, in KeyInput) (Account, error)
+	TestAccount(ctx context.Context, agencyID, accountID string) (Account, error)
 }
 
 type KeyReader interface {
@@ -46,6 +47,7 @@ type accountManager struct {
 	st     *store
 	now    func() string
 	master []byte
+	prober Prober
 }
 
 type accountKeyRow struct {

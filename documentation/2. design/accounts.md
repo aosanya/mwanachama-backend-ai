@@ -23,3 +23,9 @@ The test operation, usage counting and limit enforcement are HS123 and HS124. Th
 ## Second domain
 
 `spec/examples/research.ai.json` names the same two roles `connection` and `credential`, so the module is exercised under words that differ from the default domain.
+
+## Testing an account (HS123)
+
+`account.test` sends one request, "Reply with the single word OK.", to the account's own address with its stored key, through a `Prober` the host injects with `WithProber`. The module ships an HTTP prober for `openai_compatible` (`chat/completions`); tests use a fake whose mode picks the outcome. With none injected the HTTP prober is used.
+
+The result stored on the account (`last_test_result`, `last_tested_at`) is exactly one of `working`, "no key is set for this account", "the model refused the key" (401 or 403), "the model could not be reached" (transport failure) or "the model answered with an error" (any other status). The prober returns an outcome code, never text, so nothing the model sent back and no part of the key can reach the stored result or the answer.

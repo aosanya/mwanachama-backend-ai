@@ -78,6 +78,7 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"GET /agencies/{agencyID}/accounts",
 		"GET /agencies/{agencyID}/accounts/{accountID}",
 		"POST /agencies/{agencyID}/accounts",
+		"POST /agencies/{agencyID}/accounts/{accountID}/test",
 		"PUT /agencies/{agencyID}/accounts/{accountID}",
 		"PUT /agencies/{agencyID}/accounts/{accountID}/key",
 	}

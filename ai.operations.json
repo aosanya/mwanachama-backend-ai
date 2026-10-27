@@ -153,6 +153,32 @@
           "body": true
         }
       ]
+    },
+    "test_account": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/test",
+      "call": "TestAccount",
+      "action": "ai.account.test",
+      "title": "Test account",
+      "description": "Send one short request with the account's key and store whether it worked. Nothing the model answered and no key is returned.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
     }
   },
   "errors": {
