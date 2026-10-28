@@ -197,7 +197,7 @@
       "action": "ai.account.test",
       "tool": "ai_test_account",
       "title": "Test account",
-      "description": "Send one short request with the account's key and store whether it worked, the message sent, the model's short reply (trimmed, at most 120 characters) and how many milliseconds the call took. The key is never returned.",
+      "description": "Send one short request and store whether it worked, the message sent, the model's short reply (trimmed, at most 120 characters) and how many milliseconds the call took. Give key to test a key that is not saved yet: it is used for this one request, never stored, and the stored result is left alone. Leave it out to test the saved key. The key is never returned.",
       "args": [
         {
           "from": "path",
@@ -208,6 +208,41 @@
           "from": "path",
           "as": "accountID",
           "description": "The account."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
+    },
+    "chat_account": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/chat",
+      "call": "ChatAccount",
+      "action": "ai.account.chat",
+      "tool": "ai_chat_account",
+      "title": "Chat with account",
+      "description": "Send a conversation to the account's model with its saved key and get back the model's next message. messages is the whole conversation so far, oldest first, each with a role (system, user, assistant or tool) and its content; an assistant message that asked for tools carries tool_calls (id, name, arguments as an object), and a tool message answers one of them with its tool_call_id. tools lists what the model may ask for (name, description, parameters as a JSON schema object). The reply is one assistant message: content, and tool_calls when the model wants a tool run; the caller runs it and sends the whole conversation again with the result. Nothing is stored except the account's usage, which counts against its limits. The key is never returned.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account."
+        },
+        {
+          "from": "body",
+          "whole": true
         }
       ],
       "returns": [
@@ -584,6 +619,13 @@
     "ErrNoMasterKey": 409,
     "ErrNoKey": 404,
     "ErrUnsupportedKind": 400,
+    "ErrInvalidChat": 400,
+    "ErrChatUnsupported": 400,
+    "ErrAccountOff": 409,
+    "ErrLimitReached": 429,
+    "ErrModelRefused": 502,
+    "ErrModelUnreached": 502,
+    "ErrModelError": 502,
     "ErrRoleNotFound": 404,
     "ErrInvalidRole": 400,
     "ErrDuplicateRoleName": 409,

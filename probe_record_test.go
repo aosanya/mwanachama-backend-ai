@@ -22,7 +22,7 @@ func testedAccount(t *testing.T, f *fakeProber, setKey bool) (ai.Manager, ai.Acc
 			t.Fatal(err)
 		}
 	}
-	got, err := m.TestAccount(ctx, "ag-1", a.ID)
+	got, err := m.TestAccount(ctx, "ag-1", a.ID, ai.KeyInput{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,6 +82,7 @@ func TestTheShownReplyIsTrimmedWithoutControlCharactersAndCapped(t *testing.T) {
 		"capped at 120":      {long, strings.Repeat("é", 120)},
 		"cap then trimmed":   {strings.Repeat("a", 119) + "  b", strings.Repeat("a", 119)},
 		"exactly 120":        {strings.Repeat("b", 120), strings.Repeat("b", 120)},
+		"blanks first":       {strings.Repeat(" ", 10) + strings.Repeat("c", 120), strings.Repeat("c", 120)},
 		"broken utf-8":       {"O\xffK", "OK"},
 		"only blanks":        {" \n\t ", ""},
 	}
@@ -191,7 +192,7 @@ func TestTheHTTPProberReturnsTheModelsReplyAndTheTime(t *testing.T) {
 		if _, err := m.SetAccountKey(ctx, "ag-1", made.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
 			t.Fatal(err)
 		}
-		got, err := m.TestAccount(ctx, "ag-1", made.ID)
+		got, err := m.TestAccount(ctx, "ag-1", made.ID, ai.KeyInput{})
 		if err != nil || got.LastTestResult != ai.TestWorking || got.LastTestReply != "hi" || got.LastTestPrompt != sentPrompt || got.LastTestMs < 0 {
 			t.Fatalf("%s: %+v %v", kind, got, err)
 		}
@@ -205,7 +206,7 @@ func TestTheHTTPProberTimesAnAnswerThatTookAWhile(t *testing.T) {
 	if _, err := m.SetAccountKey(ctx, "ag-1", made.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := m.TestAccount(ctx, "ag-1", made.ID)
+	got, err := m.TestAccount(ctx, "ag-1", made.ID, ai.KeyInput{})
 	if err != nil || got.LastTestMs < 60 || got.LastTestMs > 5000 {
 		t.Fatalf("ms %d %v", got.LastTestMs, err)
 	}

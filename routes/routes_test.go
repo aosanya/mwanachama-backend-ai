@@ -25,6 +25,11 @@ func newServer(t *testing.T) *httptest.Server {
 	if err != nil {
 		t.Fatal(err)
 	}
+	pool, err := db.DB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool.SetMaxOpenConns(1)
 	s, err := ai.LoadSpec("../ai.wakala.json")
 	if err != nil {
 		t.Fatal(err)
@@ -78,6 +83,7 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"GET /agencies/{agencyID}/accounts",
 		"GET /agencies/{agencyID}/accounts/{accountID}",
 		"POST /agencies/{agencyID}/accounts",
+		"POST /agencies/{agencyID}/accounts/{accountID}/chat",
 		"POST /agencies/{agencyID}/accounts/{accountID}/test",
 		"GET /agencies/{agencyID}/accounts/{accountID}/usage",
 		"POST /agencies/{agencyID}/limits/check",

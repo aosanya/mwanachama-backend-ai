@@ -16,7 +16,7 @@ func TestTestAccountRouteReturnsThePromptTheReplyAndTheTimeButNeverTheKey(t *tes
 	_, body := do(t, srv, "POST", "/agencies/ag-1/accounts", `{"name":"main","provider":"openai_compatible","base_url":"`+provider.URL+`","model_name":"synthetic","status":"enabled"}`)
 	id := between(body, `"id":"`, `"`)
 	do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/key", `{"key":"`+syntheticKey+`"}`)
-	code, out := do(t, srv, "POST", "/agencies/ag-1/accounts/"+id+"/test", "")
+	code, out := do(t, srv, "POST", "/agencies/ag-1/accounts/"+id+"/test", "{}")
 	if code != 200 {
 		t.Fatalf("%d %s", code, out)
 	}
@@ -33,5 +33,32 @@ func TestTestAccountRouteReturnsThePromptTheReplyAndTheTimeButNeverTheKey(t *tes
 	}
 	if strings.Contains(out, syntheticKey) {
 		t.Fatalf("key in %s", out)
+	}
+}
+
+func TestTestAccountRouteUsesATypedKeyWhenTheBodyCarriesOne(t *testing.T) {
+	const typed = "sk-TYPED-route-not-saved-5a4b3c2d"
+	var bearers []string
+	provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		bearers = append(bearers, strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "))
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"OK"}}]}`))
+	}))
+	t.Cleanup(provider.Close)
+	srv := newServer(t)
+	_, body := do(t, srv, "POST", "/agencies/ag-1/accounts", `{"name":"main","provider":"openai_compatible","base_url":"`+provider.URL+`","model_name":"synthetic","status":"enabled"}`)
+	id := between(body, `"id":"`, `"`)
+	do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/key", `{"key":"`+syntheticKey+`"}`)
+	path := "/agencies/ag-1/accounts/" + id + "/test"
+	for _, c := range []struct{ body, want string }{{`{"key":"` + typed + `"}`, typed}, {`{}`, syntheticKey}} {
+		code, out := do(t, srv, "POST", path, c.body)
+		if code != 200 || bearers[len(bearers)-1] != c.want {
+			t.Fatalf("body %s: %d %s, provider saw %q", c.body, code, out, bearers[len(bearers)-1])
+		}
+		if strings.Contains(out, typed) || strings.Contains(out, syntheticKey) {
+			t.Fatalf("key in %s", out)
+		}
+	}
+	if code, out := do(t, srv, "POST", path, `{"key":"   "}`); code == 200 {
+		t.Fatalf("a blank key was tested: %s", out)
 	}
 }

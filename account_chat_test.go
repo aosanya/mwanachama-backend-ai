@@ -203,7 +203,7 @@ func TestRowStoredBeforeTheChatFieldsReadsAsOffWithNoLabel(t *testing.T) {
 	m, db, s := newTestManager(t)
 	o, _ := s.ByRole("account")
 	table := s.TableFor(o)
-	for _, column := range []string{"chat_enabled", "chat_label"} {
+	for _, column := range []string{"chat_enabled", "chat_label", "last_test_prompt", "last_test_reply", "last_test_ms"} {
 		if err := db.Exec("alter table " + table + " drop column " + column).Error; err != nil {
 			t.Fatalf("drop %s: %v", column, err)
 		}
@@ -212,17 +212,17 @@ func TestRowStoredBeforeTheChatFieldsReadsAsOffWithNoLabel(t *testing.T) {
 	if err := db.Exec(insert, "old-1", "kept").Error; err != nil {
 		t.Fatal(err)
 	}
-	for _, add := range []string{"chat_enabled boolean", "chat_label text"} {
+	for _, add := range []string{"chat_enabled boolean", "chat_label text", "last_test_prompt text", "last_test_reply text", "last_test_ms bigint"} {
 		if err := db.Exec("alter table " + table + " add column " + add).Error; err != nil {
 			t.Fatalf("add %s: %v", add, err)
 		}
 	}
 	got, err := m.GetAccount(ctx, "ag-old", "old-1")
-	if err != nil || got.Name != "kept" || got.ChatEnabled || got.ChatLabel != "" {
+	if err != nil || got.Name != "kept" || got.ChatEnabled || got.ChatLabel != "" || got.LastTestPrompt != "" || got.LastTestReply != "" || got.LastTestMs != 0 {
 		t.Fatalf("get: %+v %v", got, err)
 	}
 	list, err := m.ListAccounts(ctx, "ag-old")
-	if err != nil || len(list) != 1 || list[0].ChatEnabled || list[0].ChatLabel != "" {
+	if err != nil || len(list) != 1 || list[0].ChatEnabled || list[0].ChatLabel != "" || list[0].LastTestMs != 0 {
 		t.Fatalf("list: %+v %v", list, err)
 	}
 	if up, err := m.UpdateAccount(ctx, "ag-old", "old-1", decodedAccount(t, withoutChat)); err != nil || up.ChatEnabled || up.ChatLabel != "" {

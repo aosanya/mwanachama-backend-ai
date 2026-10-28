@@ -135,7 +135,7 @@ func TestAccountTestRunsThroughTheKindsAdapter(t *testing.T) {
 		if _, err := m.SetAccountKey(ctx, "ag-1", made.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
 			t.Fatal(err)
 		}
-		got, err := m.TestAccount(ctx, "ag-1", made.ID)
+		got, err := m.TestAccount(ctx, "ag-1", made.ID, ai.KeyInput{})
 		if err != nil || got.LastTestResult != "working" {
 			t.Fatalf("%s: %+v %v", kind, got, err)
 		}

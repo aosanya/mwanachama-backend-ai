@@ -32,6 +32,7 @@ type ToolCall struct {
 
 type Request struct {
 	Prompt    string
+	Messages  []Message
 	Tools     []Tool
 	MaxTokens int
 }
@@ -79,7 +80,7 @@ func (openAIAdapter) BuildRequest(ctx context.Context, a Account, key string, r 
 	payload := map[string]any{
 		"model":      a.ModelName,
 		"max_tokens": r.MaxTokens,
-		"messages":   []map[string]string{{"role": "user", "content": r.Prompt}},
+		"messages":   openAIMessages(r),
 	}
 	if len(r.Tools) > 0 {
 		tools := make([]map[string]any, 0, len(r.Tools))
@@ -132,10 +133,14 @@ func (openAIAdapter) ParseReply(body []byte) (Reply, error) {
 type anthropicAdapter struct{}
 
 func (anthropicAdapter) BuildRequest(ctx context.Context, a Account, key string, r Request) (*http.Request, error) {
+	system, messages := anthropicMessages(r)
 	payload := map[string]any{
 		"model":      a.ModelName,
 		"max_tokens": r.MaxTokens,
-		"messages":   []map[string]string{{"role": "user", "content": r.Prompt}},
+		"messages":   messages,
+	}
+	if system != "" {
+		payload["system"] = system
 	}
 	if len(r.Tools) > 0 {
 		tools := make([]map[string]any, 0, len(r.Tools))
@@ -185,6 +190,9 @@ func (anthropicAdapter) ParseReply(body []byte) (Reply, error) {
 type geminiAdapter struct{}
 
 func (geminiAdapter) BuildRequest(ctx context.Context, a Account, key string, r Request) (*http.Request, error) {
+	if len(r.Messages) > 0 {
+		return nil, errNoHistory
+	}
 	payload := map[string]any{
 		"contents":         []map[string]any{{"role": "user", "parts": []map[string]string{{"text": r.Prompt}}}},
 		"generationConfig": map[string]any{"maxOutputTokens": r.MaxTokens},

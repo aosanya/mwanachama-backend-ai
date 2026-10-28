@@ -130,6 +130,7 @@ func accountLimits(a Account) Limits {
 }
 
 func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error) {
+	m.chat.writes.settled(agencyID, in.AccountID)
 	a, err := m.GetAccount(ctx, agencyID, in.AccountID)
 	if err != nil {
 		return Decision{}, err
@@ -196,6 +197,7 @@ func (m *accountManager) ListUsage(ctx context.Context, agencyID, accountID stri
 }
 
 func (m *accountManager) ListRoleUsage(ctx context.Context, agencyID, accountID, roleID string) (UsageReport, error) {
+	m.chat.writes.settled(agencyID, accountID)
 	a, err := m.GetAccount(ctx, agencyID, accountID)
 	if err != nil {
 		return UsageReport{}, err

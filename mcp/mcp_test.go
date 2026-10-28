@@ -24,6 +24,11 @@ func connect(t *testing.T) *gosdkmcp.ClientSession {
 	if err != nil {
 		t.Fatal(err)
 	}
+	pool, err := db.DB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool.SetMaxOpenConns(1)
 	s, err := ai.LoadSpec("../ai.wakala.json")
 	if err != nil {
 		t.Fatal(err)

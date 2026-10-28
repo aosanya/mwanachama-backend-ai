@@ -201,7 +201,7 @@ func TestKeyNeverAppearsInAnyOutputErrorOrLog(t *testing.T) {
 	}
 	set, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: syntheticKey})
 	note(set, err)
-	tested, err := m.TestAccount(ctx, "ag-1", a.ID)
+	tested, err := m.TestAccount(ctx, "ag-1", a.ID, ai.KeyInput{})
 	note(tested, err)
 	g, err := m.GetAccount(ctx, "ag-1", a.ID)
 	note(g, err)
@@ -273,7 +273,7 @@ func TestReplacingTheKeyClearsTheLastTestResult(t *testing.T) {
 	if _, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: "sk-OLD-1"}); err != nil {
 		t.Fatal(err)
 	}
-	tested, err := m.TestAccount(ctx, "ag-1", a.ID)
+	tested, err := m.TestAccount(ctx, "ag-1", a.ID, ai.KeyInput{})
 	if err != nil || tested.LastTestResult != ai.TestRefused || tested.LastTestedAt == "" {
 		t.Fatalf("test: %+v %v", tested, err)
 	}
@@ -295,7 +295,7 @@ func TestRefusedKeyReplacementKeepsTheLastTestResult(t *testing.T) {
 	m, _, _ := newTestManager(t, ai.WithMasterKey(master), ai.WithProber(f))
 	a := mustAdd(t, m, "ag-1", "main")
 	m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: "sk-OLD-1"})
-	m.TestAccount(ctx, "ag-1", a.ID)
+	m.TestAccount(ctx, "ag-1", a.ID, ai.KeyInput{})
 	if _, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: " "}); !errors.Is(err, ai.ErrInvalidKey) {
 		t.Fatalf("got %v", err)
 	}

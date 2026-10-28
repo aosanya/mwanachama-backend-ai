@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -48,18 +49,32 @@ func WithProber(p Prober) Option {
 	return func(m *accountManager) { m.prober = p }
 }
 
-func (m *accountManager) TestAccount(ctx context.Context, agencyID, accountID string) (Account, error) {
+func (m *accountManager) TestAccount(ctx context.Context, agencyID, accountID string, in KeyInput) (Account, error) {
 	held, err := m.GetAccount(ctx, agencyID, accountID)
 	if err != nil {
 		return Account{}, err
 	}
-	rec := m.probeRecord(ctx, held)
-	held.LastTestResult, held.LastTestPrompt, held.LastTestReply, held.LastTestMs = rec.result, rec.prompt, rec.reply, rec.ms
-	held.LastTestedAt = m.now()
+	if in.Key != "" {
+		return m.testTypedKey(ctx, held, in.Key)
+	}
+	held = m.withTest(held, m.probeStoredKey(ctx, held))
 	if err := m.update(ctx, roleAccount, held.ID, held); err != nil {
 		return Account{}, err
 	}
 	return held, nil
+}
+
+func (m *accountManager) testTypedKey(ctx context.Context, held Account, key string) (Account, error) {
+	if strings.TrimSpace(key) == "" || len(key) > maxKeyBytes {
+		return Account{}, ErrInvalidKey
+	}
+	return m.withTest(held, m.probeWith(ctx, held, key)), nil
+}
+
+func (m *accountManager) withTest(a Account, rec testRecord) Account {
+	a.LastTestResult, a.LastTestPrompt, a.LastTestReply, a.LastTestMs = rec.result, rec.prompt, rec.reply, rec.ms
+	a.LastTestedAt = m.now()
+	return a
 }
 
 type testRecord struct {
@@ -69,11 +84,15 @@ type testRecord struct {
 	ms     int
 }
 
-func (m *accountManager) probeRecord(ctx context.Context, a Account) testRecord {
+func (m *accountManager) probeStoredKey(ctx context.Context, a Account) testRecord {
 	key, err := m.AccountKey(ctx, a.AgencyID, a.ID)
 	if err != nil || key == "" {
 		return testRecord{result: TestNoKey}
 	}
+	return m.probeWith(ctx, a, key)
+}
+
+func (m *accountManager) probeWith(ctx context.Context, a Account, key string) testRecord {
 	prober := m.prober
 	if prober == nil {
 		prober = NewHTTPProber()

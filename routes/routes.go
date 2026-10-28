@@ -19,6 +19,13 @@ var Sentinels = map[string]error{
 	"ErrNoMasterKey":     ai.ErrNoMasterKey,
 	"ErrNoKey":           ai.ErrNoKey,
 	"ErrUnsupportedKind": ai.ErrUnsupportedKind,
+	"ErrInvalidChat":     ai.ErrInvalidChat,
+	"ErrChatUnsupported": ai.ErrChatUnsupported,
+	"ErrAccountOff":      ai.ErrAccountOff,
+	"ErrLimitReached":    ai.ErrLimitReached,
+	"ErrModelRefused":    ai.ErrModelRefused,
+	"ErrModelUnreached":  ai.ErrModelUnreached,
+	"ErrModelError":      ai.ErrModelError,
 
 	"ErrRoleNotFound":      ai.ErrRoleNotFound,
 	"ErrInvalidRole":       ai.ErrInvalidRole,

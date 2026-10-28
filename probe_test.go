@@ -45,7 +45,7 @@ func TestAccountTestEachReason(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			got, err := m.TestAccount(ctx, "ag-1", a.ID)
+			got, err := m.TestAccount(ctx, "ag-1", a.ID, ai.KeyInput{})
 			if err != nil || got.LastTestResult != c.want || got.LastTestedAt == "" {
 				t.Fatalf("got %+v %v", got, err)
 			}

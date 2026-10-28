@@ -21,6 +21,11 @@ func openDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("gorm.Open: %v", err)
 	}
+	pool, err := db.DB()
+	if err != nil {
+		t.Fatalf("db.DB: %v", err)
+	}
+	pool.SetMaxOpenConns(1)
 	return db
 }
 
