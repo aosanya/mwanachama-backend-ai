@@ -72,7 +72,7 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 			return Usage{}, err
 		}
 		if n == 0 {
-			row := Usage{ID: id, AgencyID: agencyID, AccountID: in.AccountID, RoleID: in.RoleID, Window: window, WindowStart: start}
+			row := Usage{ID: id, AgencyID: agencyID, AccountID: in.AccountID, RoleID: in.RoleID, WindowKind: window, WindowStart: start}
 			if err := m.st.Insert(ctx, roleUsage, row); err != nil {
 				return Usage{}, err
 			}
@@ -98,9 +98,9 @@ type tally struct{ Requests, Tokens int }
 
 func (m *accountManager) sum(ctx context.Context, agencyID, accountID, roleID, window string) (int, int, error) {
 	starts := windowStarts(m.instant())
-	q := m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window = ? AND window_start = ?", agencyID, accountID, window, starts[window])
+	q := m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window_kind = ? AND window_start = ?", agencyID, accountID, window, starts[window])
 	if window == "week" {
-		q = m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window = ? AND window_start >= ?", agencyID, accountID, "day", starts["weekFrom"])
+		q = m.st.Query(ctx, roleUsage).Where("agency_id = ? AND account_id = ? AND window_kind = ? AND window_start >= ?", agencyID, accountID, "day", starts["weekFrom"])
 	}
 	if roleID != "" {
 		q = q.Where("role_id = ?", roleID)

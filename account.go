@@ -45,7 +45,7 @@ func (m *accountManager) nameTaken(ctx context.Context, agencyID, name, except s
 func (m *accountManager) CreateAccount(ctx context.Context, agencyID string, in Account) (Account, error) {
 	in.AgencyID = agencyID
 	in.KeySet = false
-	in.LastTestResult, in.LastTestedAt = "", ""
+	in.ForgetTest()
 	if err := m.valid(in); err != nil {
 		return Account{}, err
 	}
@@ -90,6 +90,7 @@ func (m *accountManager) UpdateAccount(ctx context.Context, agencyID, accountID 
 	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
 	held.TokensPerWeek, held.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
+	held = held.WithChatOf(in)
 	if err := m.valid(held); err != nil {
 		return Account{}, err
 	}
@@ -160,7 +161,7 @@ func (m *accountManager) SetAccountKey(ctx context.Context, agencyID, accountID 
 		return Account{}, fmt.Errorf("SetAccountKey: %w", err)
 	}
 	held.KeySet = true
-	held.LastTestResult, held.LastTestedAt = "", ""
+	held.ForgetTest()
 	held.UpdatedAt = row.UpdatedAt
 	if err := m.update(ctx, roleAccount, held.ID, held); err != nil {
 		return Account{}, fmt.Errorf("SetAccountKey: %w", err)

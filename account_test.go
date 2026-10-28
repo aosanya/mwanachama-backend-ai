@@ -188,7 +188,8 @@ func TestKeyNeverAppearsInAnyOutputErrorOrLog(t *testing.T) {
 	var logs bytes.Buffer
 	log.SetOutput(&logs)
 	defer log.SetOutput(nil)
-	m, _, _ := newTestManager(t, ai.WithMasterKey(master))
+	echo := &fakeProber{out: ai.ProbeOK, reply: "OK " + syntheticKey}
+	m, _, _ := newTestManager(t, ai.WithMasterKey(master), ai.WithProber(echo))
 	a := mustAdd(t, m, "ag-1", "main")
 	var seen []string
 	note := func(v any, err error) {
@@ -200,6 +201,8 @@ func TestKeyNeverAppearsInAnyOutputErrorOrLog(t *testing.T) {
 	}
 	set, err := m.SetAccountKey(ctx, "ag-1", a.ID, ai.KeyInput{Key: syntheticKey})
 	note(set, err)
+	tested, err := m.TestAccount(ctx, "ag-1", a.ID)
+	note(tested, err)
 	g, err := m.GetAccount(ctx, "ag-1", a.ID)
 	note(g, err)
 	l, err := m.ListAccounts(ctx, "ag-1")

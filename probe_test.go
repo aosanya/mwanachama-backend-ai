@@ -5,18 +5,21 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	ai "github.com/aosanya/mwanachama-backend-ai"
 )
 
 type fakeProber struct {
-	out  ai.ProbeOutcome
-	seen string
+	out     ai.ProbeOutcome
+	reply   string
+	elapsed time.Duration
+	seen    string
 }
 
-func (f *fakeProber) Probe(_ context.Context, _ ai.Account, key string) ai.ProbeOutcome {
+func (f *fakeProber) Probe(_ context.Context, _ ai.Account, key string) ai.ProbeResult {
 	f.seen = key
-	return f.out
+	return ai.ProbeResult{Outcome: f.out, Reply: f.reply, Elapsed: f.elapsed}
 }
 
 func TestAccountTestEachReason(t *testing.T) {

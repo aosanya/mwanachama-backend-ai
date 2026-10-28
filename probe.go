@@ -24,17 +24,24 @@ const (
 	ProbeError
 )
 
+type ProbeResult struct {
+	Outcome ProbeOutcome
+	Reply   string
+	Elapsed time.Duration
+}
+
 type Prober interface {
-	Probe(ctx context.Context, a Account, key string) ProbeOutcome
+	Probe(ctx context.Context, a Account, key string) ProbeResult
 }
 
 type httpProber struct{ client *http.Client }
 
 func NewHTTPProber() Prober { return httpProber{client: &http.Client{Timeout: 20 * time.Second}} }
 
-func (p httpProber) Probe(ctx context.Context, a Account, key string) ProbeOutcome {
-	_, out := Call(ctx, p.client, a, key, Request{Prompt: probePrompt, MaxTokens: 8})
-	return out
+func (p httpProber) Probe(ctx context.Context, a Account, key string) ProbeResult {
+	started := time.Now()
+	reply, out := Call(ctx, p.client, a, key, Request{Prompt: probePrompt, MaxTokens: 8})
+	return ProbeResult{Outcome: out, Reply: reply.Text, Elapsed: time.Since(started)}
 }
 
 func WithProber(p Prober) Option {
@@ -46,8 +53,8 @@ func (m *accountManager) TestAccount(ctx context.Context, agencyID, accountID st
 	if err != nil {
 		return Account{}, err
 	}
-	result := m.probeResult(ctx, held)
-	held.LastTestResult = result
+	rec := m.probeRecord(ctx, held)
+	held.LastTestResult, held.LastTestPrompt, held.LastTestReply, held.LastTestMs = rec.result, rec.prompt, rec.reply, rec.ms
 	held.LastTestedAt = m.now()
 	if err := m.update(ctx, roleAccount, held.ID, held); err != nil {
 		return Account{}, err
@@ -55,16 +62,32 @@ func (m *accountManager) TestAccount(ctx context.Context, agencyID, accountID st
 	return held, nil
 }
 
-func (m *accountManager) probeResult(ctx context.Context, a Account) string {
+type testRecord struct {
+	result string
+	prompt string
+	reply  string
+	ms     int
+}
+
+func (m *accountManager) probeRecord(ctx context.Context, a Account) testRecord {
 	key, err := m.AccountKey(ctx, a.AgencyID, a.ID)
 	if err != nil || key == "" {
-		return TestNoKey
+		return testRecord{result: TestNoKey}
 	}
 	prober := m.prober
 	if prober == nil {
 		prober = NewHTTPProber()
 	}
-	switch prober.Probe(ctx, a, key) {
+	got := prober.Probe(ctx, a, key)
+	rec := testRecord{result: resultOf(got.Outcome), prompt: probePrompt, ms: wholeMilliseconds(got.Elapsed)}
+	if got.Outcome == ProbeOK {
+		rec.reply = shownReply(got.Reply, key)
+	}
+	return rec
+}
+
+func resultOf(out ProbeOutcome) string {
+	switch out {
 	case ProbeOK:
 		return TestWorking
 	case ProbeRefused:

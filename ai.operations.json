@@ -7,7 +7,7 @@
       "action": "ai.account.create",
       "tool": "ai_create_account",
       "title": "Add account",
-      "description": "Add an account. The key is set separately and never returned.",
+      "description": "Add an account. The key is set separately and never returned. The chat switch starts off and the chat label empty unless sent.",
       "args": [
         {
           "from": "path",
@@ -80,7 +80,7 @@
       "action": "ai.account.update",
       "tool": "ai_update_account",
       "title": "Change account",
-      "description": "Replace an account's settings and limits. The key is untouched.",
+      "description": "Replace an account's settings and limits. The key is untouched. The chat switch and chat label are replaced only when sent.",
       "args": [
         {
           "from": "path",
@@ -197,7 +197,7 @@
       "action": "ai.account.test",
       "tool": "ai_test_account",
       "title": "Test account",
-      "description": "Send one short request with the account's key and store whether it worked. Nothing the model answered and no key is returned.",
+      "description": "Send one short request with the account's key and store whether it worked, the message sent, the model's short reply (trimmed, at most 120 characters) and how many milliseconds the call took. The key is never returned.",
       "args": [
         {
           "from": "path",

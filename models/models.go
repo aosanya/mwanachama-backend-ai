@@ -22,6 +22,11 @@ type Account struct {
 	KeySet            bool   `json:"key_set"`
 	LastTestResult    string `json:"last_test_result,omitempty"`
 	LastTestedAt      string `json:"last_tested_at,omitempty"`
+	LastTestPrompt    string `json:"last_test_prompt"`
+	LastTestReply     string `json:"last_test_reply"`
+	LastTestMs        int    `json:"last_test_ms"`
+	ChatEnabled       bool   `json:"chat_enabled"`
+	ChatLabel         string `json:"chat_label"`
 	TokensPerCall     *int   `json:"tokens_per_call"`
 	TokensPerDay      *int   `json:"tokens_per_day"`
 	TokensPerMonth    *int   `json:"tokens_per_month"`
@@ -31,6 +36,14 @@ type Account struct {
 	RequestsPerWeek   *int   `json:"requests_per_week"`
 	CreatedAt         string `json:"created_at"`
 	UpdatedAt         string `json:"updated_at"`
+
+	chatEnabledOmitted bool
+	chatLabelOmitted   bool
+}
+
+func (a *Account) ForgetTest() {
+	a.LastTestResult, a.LastTestedAt = "", ""
+	a.LastTestPrompt, a.LastTestReply, a.LastTestMs = "", "", 0
 }
 
 type KeyInput struct {
@@ -52,7 +65,7 @@ type Usage struct {
 	AgencyID    string `json:"agency_id"`
 	AccountID   string `json:"account_id"`
 	RoleID      string `json:"role_id"`
-	Window      string `json:"window"`
+	WindowKind  string `json:"window"`
 	WindowStart string `json:"window_start"`
 	Requests    int    `json:"requests"`
 	TokensIn    int    `json:"tokens_in"`

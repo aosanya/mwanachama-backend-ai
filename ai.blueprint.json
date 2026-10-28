@@ -68,6 +68,32 @@
           "description": "When the account was last tested."
         },
         {
+          "name": "last_test_prompt",
+          "type": "string",
+          "description": "The message the last test sent to the model. Written by the test operation; empty when no test has sent one, including a test that found no key."
+        },
+        {
+          "name": "last_test_reply",
+          "type": "string",
+          "description": "What the model answered to the last test, trimmed, without control characters, at most 120 characters. Written by the test operation; empty when the model did not answer. Dropped whole if it holds the account's key."
+        },
+        {
+          "name": "last_test_ms",
+          "type": "int",
+          "description": "How long the last test's call took, in whole milliseconds. Written by the test operation; zero when never tested or when no call was made."
+        },
+        {
+          "name": "chat_enabled",
+          "type": "bool",
+          "description": "Whether the studio's chat may use the account. Off unless switched on. The module never requires one account to be on; the console does."
+        },
+        {
+          "name": "chat_label",
+          "type": "string",
+          "description": "The name the chat's picker shows for the account, at most 60 characters. Empty means the account's model name.",
+          "matches": "chat_label"
+        },
+        {
           "name": "tokens_per_call",
           "type": "int",
           "description": "The most tokens one call may use. Null means it does not apply; zero means none.",
@@ -196,7 +222,7 @@
           "description": "The AI role the use was for. Empty when none."
         },
         {
-          "name": "window",
+          "name": "window_kind",
           "type": "enum",
           "description": "The window kind.",
           "required": true,
@@ -235,7 +261,7 @@
           "fields": [
             "agency_id",
             "account_id",
-            "window",
+            "window_kind",
             "window_start"
           ]
         }
