@@ -609,6 +609,59 @@
           "body": true
         }
       ]
+    },
+    "list_models": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/models",
+      "call": "ListModels",
+      "action": "ai.model.list",
+      "tool": "ai_list_models",
+      "title": "List models",
+      "description": "The models for the Model dropdown: for each provider kind, the models this agency's last refresh found, then the standard starting list's models not already among them. Give provider to see one kind only.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "query",
+          "as": "provider",
+          "description": "A provider kind to list. Leave out for every kind."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "refresh_models": {
+      "method": "POST",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/models/refresh",
+      "call": "RefreshModels",
+      "action": "ai.model.refresh",
+      "tool": "ai_refresh_models",
+      "title": "Refresh models",
+      "description": "Ask the account's provider, with the account's key, which models the key can use, and replace this agency's list for that provider kind with the answer. An empty or failed answer leaves the list as it was. Answers the provider kind's list as ai_list_models shows it.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account whose key is used."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
     }
   },
   "errors": {
@@ -629,6 +682,7 @@
     "ErrRoleNotFound": 404,
     "ErrInvalidRole": 400,
     "ErrDuplicateRoleName": 409,
-    "ErrRevisionNotFound": 404
+    "ErrRevisionNotFound": 404,
+    "ErrInvalidModelList": 400
   }
 }

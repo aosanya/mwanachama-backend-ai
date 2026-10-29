@@ -12,10 +12,12 @@ An agency's AI is spread across places that do not know each other: a model key 
 | Account key | The key itself, in its own object that no operation reaches, sealed at rest |
 | AI role | A container for a system prompt: name, description, the manager's fine-tuning, a switch for the agency's instructions, status, the account it uses, the agency role it speaks for, and its own five limits |
 | AI role revision | Every save of a role's fine-tuning, switch or limits, with the previous values, who saved it and when |
+| Model entry | One model name for one provider kind, on an agency's own list from its last refresh or on the standard starting list every agency sees. Stored data, so a new model never needs a release |
 | Usage | Requests and tokens in and out, counted by account, AI role and day. This is where consumption is stored: in this module's own `usage` object, in the database the host gives it, keyed by agency like the other modules' data. The one-minute rate may use a small in-memory window that resets on a restart; every other limit counts from the stored rows |
 
 ## What a person can do
 
+- See the models for the Model dropdown: the ones the provider reported for this agency's key, above the standard starting list, and refresh them from the provider with an account's key. See [the model list](../2.%20design/models.md).
 - Add several accounts to an agency and change or remove any of them.
 - Set an account's key. It is never shown again, only whether it is set.
 - Test an account: one short request, answered as working or as one of four plain reasons (no key is set, the model refused the key, the model could not be reached, the model answered with an error).

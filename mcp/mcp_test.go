@@ -77,7 +77,7 @@ func TestToolsListAndKeyNeverReturned(t *testing.T) {
 	for _, tool := range list.Tools {
 		have[tool.Name] = true
 	}
-	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_check_limits", "ai_list_usage", "ai_record_usage", "ai_test_account"} {
+	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_check_limits", "ai_list_usage", "ai_record_usage", "ai_test_account", "ai_list_models", "ai_refresh_models"} {
 		if !have[want] {
 			t.Fatalf("missing tool %s in %v", want, have)
 		}

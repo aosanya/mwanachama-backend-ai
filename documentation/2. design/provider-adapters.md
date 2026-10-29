@@ -20,6 +20,10 @@ The key never appears in a URL or a body. Gemini accepts it as a query parameter
 
 The Test of an account (`httpProber`) is `Call` with one short prompt. The gateway of HS127 will use `Call` with tools and read the token counts for usage.
 
+## Model lists
+
+Each kind also lists its models (`GET` per kind, see [the model list](models.md)) through `ModelLister`, kept apart from `Adapter` so an adapter written elsewhere need not grow a method.
+
 ## Tests
 
 `adapter_test.go` runs each kind against an httptest fake: a request and tool call round trip, token counts, the key in its one header and nowhere else, status mapping, and a Test through the real prober. Each was checked to fail with the key moved into the URL, into a wrong header, and with the usage count dropped.

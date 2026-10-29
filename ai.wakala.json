@@ -32,6 +32,12 @@
       "name": "ai_role_revision",
       "table": "ai_role_revisions",
       "description": "What a prompt held before a save."
+    },
+    {
+      "role": "model_entry",
+      "name": "model_entry",
+      "table": "model_entries",
+      "description": "A model name listed for a provider kind."
     }
   ]
 }

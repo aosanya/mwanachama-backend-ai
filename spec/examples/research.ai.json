@@ -32,6 +32,12 @@
       "name": "persona_revision",
       "table": "persona_revisions",
       "description": "What a prompt held before a save."
+    },
+    {
+      "role": "model_entry",
+      "name": "listed_model",
+      "table": "listed_models",
+      "description": "A model name listed for a provider kind."
     }
   ]
 }

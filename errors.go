@@ -14,6 +14,7 @@ var (
 	ErrInvalidRole       = errors.New("invalid AI role")
 	ErrDuplicateRoleName = errors.New("an AI role with this name already exists")
 	ErrRevisionNotFound  = errors.New("revision not found")
+	ErrInvalidModelList  = errors.New("invalid model list")
 
 	ErrInvalidChat     = errors.New("invalid chat request")
 	ErrChatUnsupported = errors.New("this provider cannot chat with tools yet")

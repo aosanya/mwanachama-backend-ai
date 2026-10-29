@@ -38,6 +38,7 @@ type Manager interface {
 	AccountManager
 	RoleManager
 	UsageManager
+	ModelManager
 	KeyReader
 }
 
@@ -56,6 +57,7 @@ type accountManager struct {
 	now           func() string
 	master        []byte
 	prober        Prober
+	lister        ModelLister
 	clock         func() time.Time
 	source        InstructionSource
 	baseURLPolicy func(string) error
@@ -79,6 +81,7 @@ func NewManager(db *gorm.DB, s *spec.Spec, opts ...Option) (Manager, error) {
 		roleUsage:      models.Usage{},
 		roleAIRole:     models.AIRole{},
 		roleRevision:   models.AIRoleRevision{},
+		roleModelEntry: models.ModelEntry{},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("NewManager: %w", err)

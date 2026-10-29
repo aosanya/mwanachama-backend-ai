@@ -256,24 +256,32 @@ func Call(ctx context.Context, client *http.Client, a Account, key string, r Req
 	if err != nil {
 		return Reply{}, ProbeUnreached
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return Reply{}, ProbeUnreached
-	}
-	defer resp.Body.Close()
-	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
-		return Reply{}, ProbeRefused
-	case resp.StatusCode < 200 || resp.StatusCode >= 300:
-		return Reply{}, ProbeError
-	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxReplyBytes))
-	if err != nil {
-		return Reply{}, ProbeUnreached
+	body, outcome := send(client, req)
+	if outcome != ProbeOK {
+		return Reply{}, outcome
 	}
 	reply, err := ad.ParseReply(body)
 	if err != nil {
 		return Reply{}, ProbeError
 	}
 	return reply, ProbeOK
+}
+
+func send(client *http.Client, req *http.Request) ([]byte, ProbeOutcome) {
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, ProbeUnreached
+	}
+	defer resp.Body.Close()
+	switch {
+	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
+		return nil, ProbeRefused
+	case resp.StatusCode < 200 || resp.StatusCode >= 300:
+		return nil, ProbeError
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxReplyBytes))
+	if err != nil {
+		return nil, ProbeUnreached
+	}
+	return body, ProbeOK
 }
