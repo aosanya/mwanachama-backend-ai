@@ -17,6 +17,8 @@ type AIRole struct {
 	RequestsPerMinute     *int   `json:"requests_per_minute"`
 	TokensPerWeek         *int   `json:"tokens_per_week"`
 	RequestsPerWeek       *int   `json:"requests_per_week"`
+	TokensPerTest         *int   `json:"tokens_per_test"`
+	ScenariosAtOnce       *int   `json:"scenarios_at_once"`
 	AccountID             string `json:"account_id"`
 	AgencyRoleID          string `json:"agency_role_id"`
 	CreatedAt             string `json:"created_at"`
@@ -36,6 +38,8 @@ type AIRoleInput struct {
 	RequestsPerMinute     *int   `json:"requests_per_minute"`
 	TokensPerWeek         *int   `json:"tokens_per_week"`
 	RequestsPerWeek       *int   `json:"requests_per_week"`
+	TokensPerTest         *int   `json:"tokens_per_test"`
+	ScenariosAtOnce       *int   `json:"scenarios_at_once"`
 }
 
 type AIRoleRevision struct {
@@ -51,6 +55,8 @@ type AIRoleRevision struct {
 	RequestsPerMinute     *int   `json:"requests_per_minute"`
 	TokensPerWeek         *int   `json:"tokens_per_week"`
 	RequestsPerWeek       *int   `json:"requests_per_week"`
+	TokensPerTest         *int   `json:"tokens_per_test"`
+	ScenariosAtOnce       *int   `json:"scenarios_at_once"`
 	SavedBy               string `json:"saved_by"`
 	SavedAt               string `json:"saved_at"`
 }
@@ -63,7 +69,7 @@ func Count(p *int) int {
 }
 
 func (r AIRole) Limits() Limits {
-	return Limits{TokensPerCall: r.TokensPerCall, TokensPerDay: r.TokensPerDay, TokensPerMonth: r.TokensPerMonth, RequestsPerDay: r.RequestsPerDay, RequestsPerMinute: r.RequestsPerMinute, TokensPerWeek: r.TokensPerWeek, RequestsPerWeek: r.RequestsPerWeek}
+	return Limits{TokensPerCall: r.TokensPerCall, TokensPerDay: r.TokensPerDay, TokensPerMonth: r.TokensPerMonth, RequestsPerDay: r.RequestsPerDay, RequestsPerMinute: r.RequestsPerMinute, TokensPerWeek: r.TokensPerWeek, RequestsPerWeek: r.RequestsPerWeek, TokensPerTest: r.TokensPerTest, ScenariosAtOnce: r.ScenariosAtOnce}
 }
 
 type AIRoleMappingInput struct {

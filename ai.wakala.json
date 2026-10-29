@@ -22,6 +22,12 @@
       "description": "Use counted by window."
     },
     {
+      "role": "test_run_usage",
+      "name": "test_run_usage",
+      "table": "test_run_usages",
+      "description": "Use counted by test run and step."
+    },
+    {
       "role": "ai_role",
       "name": "ai_role",
       "table": "ai_roles",

@@ -110,7 +110,7 @@
       "action": "ai.limits.set",
       "tool": "ai_set_limits",
       "title": "Set limits",
-      "description": "Replace only the account's seven limits (zero means none, null means the limit does not apply). Name, provider, address, model and key are untouched.",
+      "description": "Replace only the account's nine limits, tokens per test and scenarios at once among them (zero means none, null means the limit does not apply). Name, provider, address, model and key are untouched.",
       "args": [
         {
           "from": "path",
@@ -259,7 +259,7 @@
       "action": "ai.usage.record",
       "tool": "ai_record_usage",
       "title": "Record use",
-      "description": "Count one call's requests and tokens.",
+      "description": "Count one call's requests and tokens. A call made for a test run names the run and the step as test_run_id and step, and is also counted against the run.",
       "args": [
         {
           "from": "path",
@@ -285,7 +285,7 @@
       "action": "ai.limits.check",
       "tool": "ai_check_limits",
       "title": "Check limits",
-      "description": "Answer whether a call may go ahead, and the most tokens it may use.",
+      "description": "Answer whether a call may go ahead, and the most tokens it may use. A call for a test run names it as test_run_id; once the run has used its tokens per test the answer is refused with budget_reached. The answer always carries the tokens per test and scenarios at once in force, zero when no limit applies.",
       "args": [
         {
           "from": "path",
@@ -322,6 +322,33 @@
           "from": "path",
           "as": "accountID",
           "description": "The account."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
+    },
+    "list_test_run_usage": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/test-runs/{testRunID}/usage",
+      "call": "ListTestRunUsage",
+      "action": "ai.usage.list_test_run",
+      "tool": "ai_list_test_run_usage",
+      "title": "List a test run's use",
+      "description": "The tokens one test run used, step by step and in total.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "testRunID",
+          "description": "The test run."
         }
       ],
       "returns": [

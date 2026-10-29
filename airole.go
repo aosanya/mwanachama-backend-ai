@@ -56,7 +56,7 @@ func (m *accountManager) validRole(r AIRole) error {
 	if !r.UseAgencyInstructions && r.FineTuning == "" {
 		return fmt.Errorf("%w: the fine-tuning is required when the agency's instructions are switched off", ErrInvalidRole)
 	}
-	for _, n := range []*int{r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth, r.RequestsPerDay, r.RequestsPerMinute, r.TokensPerWeek, r.RequestsPerWeek} {
+	for _, n := range []*int{r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth, r.RequestsPerDay, r.RequestsPerMinute, r.TokensPerWeek, r.RequestsPerWeek, r.TokensPerTest, r.ScenariosAtOnce} {
 		if models.Count(n) < 0 {
 			return fmt.Errorf("%w: a limit cannot be negative", ErrInvalidRole)
 		}
@@ -82,6 +82,7 @@ func applyRoleInput(r *AIRole, in AIRoleInput) {
 	r.TokensPerCall, r.TokensPerDay, r.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	r.RequestsPerDay, r.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
 	r.TokensPerWeek, r.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
+	r.TokensPerTest, r.ScenariosAtOnce = in.TokensPerTest, in.ScenariosAtOnce
 }
 
 func (m *accountManager) CreateAIRole(ctx context.Context, agencyID string, in AIRoleInput) (AIRole, error) {

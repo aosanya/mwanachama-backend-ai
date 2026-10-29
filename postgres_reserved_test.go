@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	ai "github.com/aosanya/mwanachama-backend-ai"
+	"github.com/aosanya/mwanachama-backend-shared/spec"
 )
 
 const postgresReservedWords = `
@@ -108,18 +109,24 @@ func TestPostgresDDLGuardReadsEveryTableAndColumn(t *testing.T) {
 				t.Fatalf("LoadSpec: %v", err)
 			}
 			s.Instance = "test"
-			tables, columns := 0, 0
+			tables, twins, columns := 0, 0, 0
 			for _, id := range identifiersIn(t, s.DDL("postgres")) {
 				switch id.kind {
 				case "table":
 					tables++
+					if strings.HasSuffix(id.name, spec.TestSuffix) {
+						twins++
+					}
 				case "column":
 					columns++
 				}
 			}
-			wantTables, wantColumns := len(s.Objects), 0
+			if twins != len(s.Objects) {
+				t.Fatalf("guard read %d _test twin tables; the spec declares %d objects", twins, len(s.Objects))
+			}
+			wantTables, wantColumns := 2*len(s.Objects), 0
 			for _, o := range s.Objects {
-				wantColumns += len(o.Fields)
+				wantColumns += 2*len(o.Fields) + 1
 			}
 			if tables != wantTables || columns != wantColumns {
 				t.Fatalf("guard read %d tables and %d columns; the spec declares %d and %d", tables, columns, wantTables, wantColumns)

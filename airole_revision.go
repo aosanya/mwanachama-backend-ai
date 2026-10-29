@@ -20,6 +20,7 @@ func (m *accountManager) saveRole(ctx context.Context, before, after AIRole, sav
 			TokensPerCall: before.TokensPerCall, TokensPerDay: before.TokensPerDay, TokensPerMonth: before.TokensPerMonth,
 			RequestsPerDay: before.RequestsPerDay, RequestsPerMinute: before.RequestsPerMinute,
 			TokensPerWeek: before.TokensPerWeek, RequestsPerWeek: before.RequestsPerWeek,
+			TokensPerTest: before.TokensPerTest, ScenariosAtOnce: before.ScenariosAtOnce,
 			SavedBy: savedBy, SavedAt: after.UpdatedAt,
 		}
 		if err := m.st.Insert(ctx, roleRevision, rev); err != nil {
@@ -77,6 +78,7 @@ func (m *accountManager) RestoreAIRoleRevision(ctx context.Context, agencyID, ro
 	next.TokensPerCall, next.TokensPerDay, next.TokensPerMonth = rev.TokensPerCall, rev.TokensPerDay, rev.TokensPerMonth
 	next.RequestsPerDay, next.RequestsPerMinute = rev.RequestsPerDay, rev.RequestsPerMinute
 	next.TokensPerWeek, next.RequestsPerWeek = rev.TokensPerWeek, rev.RequestsPerWeek
+	next.TokensPerTest, next.ScenariosAtOnce = rev.TokensPerTest, rev.ScenariosAtOnce
 	if err := m.validRole(next); err != nil {
 		return AIRole{}, err
 	}
@@ -91,6 +93,7 @@ func limitsDiffer(a, b Limits) bool {
 		{a.TokensPerCall, b.TokensPerCall}, {a.TokensPerDay, b.TokensPerDay}, {a.TokensPerMonth, b.TokensPerMonth},
 		{a.RequestsPerDay, b.RequestsPerDay}, {a.RequestsPerMinute, b.RequestsPerMinute},
 		{a.TokensPerWeek, b.TokensPerWeek}, {a.RequestsPerWeek, b.RequestsPerWeek},
+		{a.TokensPerTest, b.TokensPerTest}, {a.ScenariosAtOnce, b.ScenariosAtOnce},
 	}
 	for _, p := range pairs {
 		if (p[0] == nil) != (p[1] == nil) || (p[0] != nil && *p[0] != *p[1]) {

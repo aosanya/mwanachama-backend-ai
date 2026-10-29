@@ -27,6 +27,7 @@ type UsageManager interface {
 	CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error)
 	ListUsage(ctx context.Context, agencyID, accountID string) (UsageReport, error)
 	ListRoleUsage(ctx context.Context, agencyID, accountID, roleID string) (UsageReport, error)
+	ListTestRunUsage(ctx context.Context, agencyID, testRunID string) (TestRunReport, error)
 }
 
 func WithClock(clock func() time.Time) Option {
@@ -91,6 +92,11 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 			}
 		}
 	}
+	if in.TestRunID != "" {
+		if err := m.recordTestRun(ctx, agencyID, in); err != nil {
+			return Usage{}, err
+		}
+	}
 	return last, nil
 }
 
@@ -126,7 +132,7 @@ var limitSpecs = []limitSpec{
 }
 
 func accountLimits(a Account) Limits {
-	return Limits{TokensPerCall: a.TokensPerCall, TokensPerDay: a.TokensPerDay, TokensPerMonth: a.TokensPerMonth, RequestsPerDay: a.RequestsPerDay, RequestsPerMinute: a.RequestsPerMinute, TokensPerWeek: a.TokensPerWeek, RequestsPerWeek: a.RequestsPerWeek}
+	return Limits{TokensPerCall: a.TokensPerCall, TokensPerDay: a.TokensPerDay, TokensPerMonth: a.TokensPerMonth, RequestsPerDay: a.RequestsPerDay, RequestsPerMinute: a.RequestsPerMinute, TokensPerWeek: a.TokensPerWeek, RequestsPerWeek: a.RequestsPerWeek, TokensPerTest: a.TokensPerTest, ScenariosAtOnce: a.ScenariosAtOnce}
 }
 
 func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error) {
@@ -139,6 +145,16 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 	roleLimits, err := m.roleLimitsFor(ctx, agencyID, in)
 	if err != nil {
 		return Decision{}, err
+	}
+	test := effectiveTestLimits(al, roleLimits)
+	if in.TestRunID != "" && test.tokensPerTest > 0 {
+		used, err := m.testRunTokens(ctx, agencyID, in.TestRunID)
+		if err != nil {
+			return Decision{}, err
+		}
+		if used >= test.tokensPerTest {
+			return Decision{Reason: testBudgetRefusal, BudgetReached: true, TokensPerTest: test.tokensPerTest, ScenariosAtOnce: test.scenariosAtOnce}, nil
+		}
 	}
 	for _, owner := range []string{"this AI role's", "this account's"} {
 		lim, roleID := roleLimits, in.RoleID
@@ -161,11 +177,16 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 				used = tok
 			}
 			if used >= max {
-				return Decision{Allowed: false, Reason: refusal(owner, ls)}, nil
+				return Decision{Allowed: false, Reason: refusal(owner, ls), TokensPerTest: test.tokensPerTest, ScenariosAtOnce: test.scenariosAtOnce}, nil
 			}
 		}
 	}
-	return Decision{Allowed: true, MaxTokens: lowerNonZero(models.Count(al.TokensPerCall), models.Count(roleLimits.TokensPerCall))}, nil
+	return Decision{
+		Allowed:         true,
+		MaxTokens:       lowerNonZero(models.Count(al.TokensPerCall), models.Count(roleLimits.TokensPerCall)),
+		TokensPerTest:   test.tokensPerTest,
+		ScenariosAtOnce: test.scenariosAtOnce,
+	}, nil
 }
 
 func refusal(owner string, ls limitSpec) string {

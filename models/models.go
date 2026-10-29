@@ -34,6 +34,8 @@ type Account struct {
 	RequestsPerMinute *int   `json:"requests_per_minute"`
 	TokensPerWeek     *int   `json:"tokens_per_week"`
 	RequestsPerWeek   *int   `json:"requests_per_week"`
+	TokensPerTest     *int   `json:"tokens_per_test"`
+	ScenariosAtOnce   *int   `json:"scenarios_at_once"`
 	CreatedAt         string `json:"created_at"`
 	UpdatedAt         string `json:"updated_at"`
 
@@ -58,6 +60,8 @@ type Limits struct {
 	RequestsPerMinute *int `json:"requests_per_minute"`
 	TokensPerWeek     *int `json:"tokens_per_week"`
 	RequestsPerWeek   *int `json:"requests_per_week"`
+	TokensPerTest     *int `json:"tokens_per_test"`
+	ScenariosAtOnce   *int `json:"scenarios_at_once"`
 }
 
 type Usage struct {
@@ -77,18 +81,24 @@ type UsageInput struct {
 	RoleID    string `json:"role_id,omitempty"`
 	TokensIn  int    `json:"tokens_in"`
 	TokensOut int    `json:"tokens_out"`
+	TestRunID string `json:"test_run_id,omitempty"`
+	Step      string `json:"step,omitempty"`
 }
 
 type CheckInput struct {
 	AccountID  string `json:"account_id"`
 	RoleID     string `json:"role_id,omitempty"`
+	TestRunID  string `json:"test_run_id,omitempty"`
 	RoleLimits Limits `json:"role_limits"`
 }
 
 type Decision struct {
-	Allowed   bool   `json:"allowed"`
-	Reason    string `json:"reason,omitempty"`
-	MaxTokens int    `json:"max_tokens"`
+	Allowed         bool   `json:"allowed"`
+	Reason          string `json:"reason,omitempty"`
+	BudgetReached   bool   `json:"budget_reached,omitempty"`
+	MaxTokens       int    `json:"max_tokens"`
+	TokensPerTest   int    `json:"tokens_per_test"`
+	ScenariosAtOnce int    `json:"scenarios_at_once"`
 }
 
 type LimitCount struct {

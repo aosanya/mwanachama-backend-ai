@@ -136,6 +136,18 @@
           "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
         },
         {
+          "name": "tokens_per_test",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens one test run may use. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "scenarios_at_once",
+          "type": "int",
+          "nullable": true,
+          "description": "The most test scenarios that may run at the same time. Null means it does not apply; zero means none."
+        },
+        {
           "name": "created_at",
           "type": "string",
           "description": "When the account was added."
@@ -268,6 +280,71 @@
       ]
     },
     {
+      "role": "test_run_usage",
+      "description": "Requests and tokens one test run used at one step, by one account and optionally one AI role.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, derived from the agency, the test run and the step.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The agency that owns the account.",
+          "required": true
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The account used.",
+          "required": true
+        },
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "The AI role the use was for. Empty when none."
+        },
+        {
+          "name": "test_run_id",
+          "type": "string",
+          "description": "The opaque id of the test run, supplied by the caller.",
+          "required": true
+        },
+        {
+          "name": "step",
+          "type": "string",
+          "description": "The opaque id of the step of the run. Empty when the caller names none."
+        },
+        {
+          "name": "requests",
+          "type": "int",
+          "description": "Requests counted at the step."
+        },
+        {
+          "name": "tokens_in",
+          "type": "int",
+          "description": "Tokens sent at the step."
+        },
+        {
+          "name": "tokens_out",
+          "type": "int",
+          "description": "Tokens received at the step."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "test_run",
+          "description": "Summing a test run.",
+          "fields": [
+            "agency_id",
+            "test_run_id"
+          ]
+        }
+      ]
+    },
+    {
       "role": "ai_role",
       "description": "A named container for a system prompt: the agency's instructions for a seat, read live, followed by this role's own fine-tuning.",
       "fields": [
@@ -356,6 +433,18 @@
           "type": "int",
           "nullable": true,
           "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "tokens_per_test",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens one test run may use. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "scenarios_at_once",
+          "type": "int",
+          "nullable": true,
+          "description": "The most test scenarios that may run at the same time. Null means it does not apply; zero means none."
         },
         {
           "name": "account_id",
@@ -478,6 +567,18 @@
           "type": "int",
           "nullable": true,
           "description": "The most requests made in a rolling seven days. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "tokens_per_test",
+          "type": "int",
+          "nullable": true,
+          "description": "The most tokens one test run may use. Null means it does not apply; zero means none."
+        },
+        {
+          "name": "scenarios_at_once",
+          "type": "int",
+          "nullable": true,
+          "description": "The most test scenarios that may run at the same time. Null means it does not apply; zero means none."
         },
         {
           "name": "saved_by",

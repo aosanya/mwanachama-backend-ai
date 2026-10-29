@@ -19,6 +19,7 @@ func usageSetup(t *testing.T, lim ai.Limits) (ai.Manager, ai.Account, *clockBox)
 	in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth = lim.TokensPerCall, lim.TokensPerDay, lim.TokensPerMonth
 	in.RequestsPerDay, in.RequestsPerMinute = lim.RequestsPerDay, lim.RequestsPerMinute
 	in.TokensPerWeek, in.RequestsPerWeek = lim.TokensPerWeek, lim.RequestsPerWeek
+	in.TokensPerTest, in.ScenariosAtOnce = lim.TokensPerTest, lim.ScenariosAtOnce
 	a, err := m.CreateAccount(ctx, "ag-1", in)
 	if err != nil {
 		t.Fatal(err)

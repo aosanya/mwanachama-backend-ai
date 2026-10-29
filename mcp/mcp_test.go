@@ -77,7 +77,7 @@ func TestToolsListAndKeyNeverReturned(t *testing.T) {
 	for _, tool := range list.Tools {
 		have[tool.Name] = true
 	}
-	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_check_limits", "ai_list_usage", "ai_record_usage", "ai_test_account", "ai_list_models", "ai_refresh_models"} {
+	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_check_limits", "ai_list_usage", "ai_list_test_run_usage", "ai_record_usage", "ai_test_account", "ai_list_models", "ai_refresh_models"} {
 		if !have[want] {
 			t.Fatalf("missing tool %s in %v", want, have)
 		}
@@ -151,5 +151,40 @@ func TestSetLimitsAcceptsNullAndWeekly(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Fatalf("missing %s in %s", want, got)
 		}
+	}
+}
+
+func TestTestLimitsAndATestRunsUseGoThroughTheTools(t *testing.T) {
+	cs := connect(t)
+	out, isErr := call(t, cs, "ai_create_account", map[string]any{"agencyID": "ag-1", "name": "budget", "provider": "openai_compatible", "base_url": "https://m.example.test/v1", "model_name": "synthetic", "status": "enabled"})
+	if isErr {
+		t.Fatalf("create: %s", out)
+	}
+	var created struct {
+		StructuredContent struct {
+			ID string `json:"id"`
+		} `json:"structuredContent"`
+	}
+	_ = json.Unmarshal([]byte(out), &created)
+	id := created.StructuredContent.ID
+	got, isErr := call(t, cs, "ai_set_limits", map[string]any{"agencyID": "ag-1", "accountID": id, "tokens_per_test": 100, "scenarios_at_once": 0})
+	if isErr {
+		t.Fatalf("set_limits: %s", got)
+	}
+	for _, want := range []string{`"tokens_per_test":100`, `"scenarios_at_once":0`} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("missing %s in %s", want, got)
+		}
+	}
+	if out, isErr := call(t, cs, "ai_record_usage", map[string]any{"agencyID": "ag-1", "account_id": id, "test_run_id": "run-1", "step": "step-1", "tokens_in": 70, "tokens_out": 40}); isErr {
+		t.Fatalf("record: %s", out)
+	}
+	checked, isErr := call(t, cs, "ai_check_limits", map[string]any{"agencyID": "ag-1", "account_id": id, "test_run_id": "run-1"})
+	if isErr || !strings.Contains(checked, `"budget_reached":true`) || !strings.Contains(checked, `"allowed":false`) {
+		t.Fatalf("check: %s", checked)
+	}
+	listed, isErr := call(t, cs, "ai_list_test_run_usage", map[string]any{"agencyID": "ag-1", "testRunID": "run-1"})
+	if isErr || !strings.Contains(listed, `"step":"step-1"`) || !strings.Contains(listed, `"tokens":110`) {
+		t.Fatalf("list: %s", listed)
 	}
 }

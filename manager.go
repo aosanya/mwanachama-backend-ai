@@ -76,12 +76,13 @@ func NewManager(db *gorm.DB, s *spec.Spec, opts ...Option) (Manager, error) {
 		return nil, fmt.Errorf("NewManager: db must not be nil")
 	}
 	st, err := newStore(db, s, map[string]any{
-		roleAccount:    models.Account{},
-		roleAccountKey: accountKeyRow{},
-		roleUsage:      models.Usage{},
-		roleAIRole:     models.AIRole{},
-		roleRevision:   models.AIRoleRevision{},
-		roleModelEntry: models.ModelEntry{},
+		roleAccount:      models.Account{},
+		roleAccountKey:   accountKeyRow{},
+		roleUsage:        models.Usage{},
+		roleTestRunUsage: models.TestRunUsage{},
+		roleAIRole:       models.AIRole{},
+		roleRevision:     models.AIRoleRevision{},
+		roleModelEntry:   models.ModelEntry{},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("NewManager: %w", err)

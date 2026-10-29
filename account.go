@@ -24,7 +24,7 @@ func (m *accountManager) valid(a Account) error {
 			return fmt.Errorf("%w: %s", ErrInvalidAccount, err)
 		}
 	}
-	for _, n := range []*int{a.TokensPerCall, a.TokensPerDay, a.TokensPerMonth, a.RequestsPerDay, a.RequestsPerMinute, a.TokensPerWeek, a.RequestsPerWeek} {
+	for _, n := range []*int{a.TokensPerCall, a.TokensPerDay, a.TokensPerMonth, a.RequestsPerDay, a.RequestsPerMinute, a.TokensPerWeek, a.RequestsPerWeek, a.TokensPerTest, a.ScenariosAtOnce} {
 		if models.Count(n) < 0 {
 			return fmt.Errorf("%w: a limit cannot be negative", ErrInvalidAccount)
 		}
@@ -90,6 +90,7 @@ func (m *accountManager) UpdateAccount(ctx context.Context, agencyID, accountID 
 	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
 	held.TokensPerWeek, held.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
+	held.TokensPerTest, held.ScenariosAtOnce = in.TokensPerTest, in.ScenariosAtOnce
 	held = held.WithChatOf(in)
 	if err := m.valid(held); err != nil {
 		return Account{}, err
@@ -114,6 +115,7 @@ func (m *accountManager) SetAccountLimits(ctx context.Context, agencyID, account
 	held.TokensPerCall, held.TokensPerDay, held.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
 	held.RequestsPerDay, held.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
 	held.TokensPerWeek, held.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
+	held.TokensPerTest, held.ScenariosAtOnce = in.TokensPerTest, in.ScenariosAtOnce
 	if err := m.valid(held); err != nil {
 		return Account{}, err
 	}
