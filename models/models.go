@@ -96,6 +96,10 @@ type CheckInput struct {
 type Decision struct {
 	Allowed         bool   `json:"allowed"`
 	Reason          string `json:"reason,omitempty"`
+	Limit           string `json:"limit,omitempty"`
+	Owner           string `json:"owner,omitempty"`
+	Max             int    `json:"max,omitempty"`
+	Used            int    `json:"used,omitempty"`
 	BudgetReached   bool   `json:"budget_reached,omitempty"`
 	MaxTokens       int    `json:"max_tokens"`
 	TokensPerTest   int    `json:"tokens_per_test"`
@@ -104,6 +108,7 @@ type Decision struct {
 
 type LimitCount struct {
 	Limit string `json:"limit"`
+	Field string `json:"field"`
 	Max   int    `json:"max"`
 	Used  int    `json:"used"`
 }

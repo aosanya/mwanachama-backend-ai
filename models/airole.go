@@ -79,6 +79,7 @@ type AIRoleMappingInput struct {
 
 type LimitInForce struct {
 	Limit  string `json:"limit"`
+	Field  string `json:"field"`
 	Max    int    `json:"max"`
 	Used   int    `json:"used"`
 	Source string `json:"source"`

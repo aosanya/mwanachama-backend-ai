@@ -51,6 +51,25 @@ func (m *accountManager) UpdateAIRole(ctx context.Context, agencyID, roleID, sav
 	return m.GetAIRole(ctx, agencyID, roleID)
 }
 
+func (m *accountManager) SetAIRoleLimits(ctx context.Context, agencyID, roleID, savedBy string, in Limits) (AIRole, error) {
+	held, err := m.GetAIRole(ctx, agencyID, roleID)
+	if err != nil {
+		return AIRole{}, err
+	}
+	next := held
+	next.TokensPerCall, next.TokensPerDay, next.TokensPerMonth = in.TokensPerCall, in.TokensPerDay, in.TokensPerMonth
+	next.RequestsPerDay, next.RequestsPerMinute = in.RequestsPerDay, in.RequestsPerMinute
+	next.TokensPerWeek, next.RequestsPerWeek = in.TokensPerWeek, in.RequestsPerWeek
+	next.TokensPerTest, next.ScenariosAtOnce = in.TokensPerTest, in.ScenariosAtOnce
+	if err := m.validRole(next); err != nil {
+		return AIRole{}, err
+	}
+	if err := m.saveRole(ctx, held, next, savedBy); err != nil {
+		return AIRole{}, fmt.Errorf("SetAIRoleLimits: %w", err)
+	}
+	return m.GetAIRole(ctx, agencyID, roleID)
+}
+
 func (m *accountManager) ListAIRoleRevisions(ctx context.Context, agencyID, roleID string) ([]AIRoleRevision, error) {
 	if _, err := m.GetAIRole(ctx, agencyID, roleID); err != nil {
 		return nil, err

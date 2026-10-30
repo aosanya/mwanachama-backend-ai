@@ -117,18 +117,18 @@ func (m *accountManager) sum(ctx context.Context, agencyID, accountID, roleID, w
 }
 
 type limitSpec struct {
-	name, window string
-	tokens       bool
-	max          func(Limits) *int
+	name, field, window string
+	tokens              bool
+	max                 func(Limits) *int
 }
 
 var limitSpecs = []limitSpec{
-	{"requests per minute", "minute", false, func(l Limits) *int { return l.RequestsPerMinute }},
-	{"requests per day", "day", false, func(l Limits) *int { return l.RequestsPerDay }},
-	{"daily token", "day", true, func(l Limits) *int { return l.TokensPerDay }},
-	{"monthly token", "month", true, func(l Limits) *int { return l.TokensPerMonth }},
-	{"weekly request", "week", false, func(l Limits) *int { return l.RequestsPerWeek }},
-	{"weekly token", "week", true, func(l Limits) *int { return l.TokensPerWeek }},
+	{"requests per minute", "requests_per_minute", "minute", false, func(l Limits) *int { return l.RequestsPerMinute }},
+	{"requests per day", "requests_per_day", "day", false, func(l Limits) *int { return l.RequestsPerDay }},
+	{"daily token", "tokens_per_day", "day", true, func(l Limits) *int { return l.TokensPerDay }},
+	{"monthly token", "tokens_per_month", "month", true, func(l Limits) *int { return l.TokensPerMonth }},
+	{"weekly request", "requests_per_week", "week", false, func(l Limits) *int { return l.RequestsPerWeek }},
+	{"weekly token", "tokens_per_week", "week", true, func(l Limits) *int { return l.TokensPerWeek }},
 }
 
 func accountLimits(a Account) Limits {
@@ -177,7 +177,7 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 				used = tok
 			}
 			if used >= max {
-				return Decision{Allowed: false, Reason: refusal(owner, ls), TokensPerTest: test.tokensPerTest, ScenariosAtOnce: test.scenariosAtOnce}, nil
+				return Decision{Allowed: false, Reason: refusal(owner, ls), Limit: ls.field, Owner: ownerWord(owner), Max: max, Used: used, TokensPerTest: test.tokensPerTest, ScenariosAtOnce: test.scenariosAtOnce}, nil
 			}
 		}
 	}
@@ -187,6 +187,13 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 		TokensPerTest:   test.tokensPerTest,
 		ScenariosAtOnce: test.scenariosAtOnce,
 	}, nil
+}
+
+func ownerWord(owner string) string {
+	if owner == "this AI role's" {
+		return "role"
+	}
+	return "account"
 }
 
 func refusal(owner string, ls limitSpec) string {
@@ -234,7 +241,7 @@ func (m *accountManager) ListRoleUsage(ctx context.Context, agencyID, accountID,
 		if ls.tokens {
 			used = tok
 		}
-		rep.Counts = append(rep.Counts, models.LimitCount{Limit: ls.name, Max: models.Count(ls.max(al)), Used: used})
+		rep.Counts = append(rep.Counts, models.LimitCount{Limit: ls.name, Field: ls.field, Max: models.Count(ls.max(al)), Used: used})
 	}
 	return rep, nil
 }

@@ -25,6 +25,7 @@ type RoleManager interface {
 	ListAIRoles(ctx context.Context, agencyID string) ([]AIRole, error)
 	GetAIRole(ctx context.Context, agencyID, roleID string) (AIRole, error)
 	UpdateAIRole(ctx context.Context, agencyID, roleID, savedBy string, in AIRoleInput) (AIRole, error)
+	SetAIRoleLimits(ctx context.Context, agencyID, roleID, savedBy string, in Limits) (AIRole, error)
 	DeleteAIRole(ctx context.Context, agencyID, roleID string) (AIRole, error)
 	ListAIRoleRevisions(ctx context.Context, agencyID, roleID string) ([]AIRoleRevision, error)
 	RestoreAIRoleRevision(ctx context.Context, agencyID, roleID, revisionID, savedBy string) (AIRole, error)

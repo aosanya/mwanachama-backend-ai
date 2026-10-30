@@ -340,7 +340,7 @@
       "action": "ai.limits.check",
       "tool": "ai_check_limits",
       "title": "Check limits",
-      "description": "Answer whether a call may go ahead, and the most tokens it may use. A call for a test run names it as test_run_id; once the run has used its tokens per test the answer is refused with budget_reached. The answer always carries the tokens per test and scenarios at once in force, zero when no limit applies.",
+      "description": "Answer whether a call may go ahead, and the most tokens it may use. A call for a test run names it as test_run_id; once the run has used its tokens per test the answer is refused with budget_reached. The answer always carries the tokens per test and scenarios at once in force, zero when no limit applies. A refusal also names the limit by the key it is saved under (limit), whose it is (owner, role or account), its maximum and how much is used, so a raise can be offered.",
       "args": [
         {
           "from": "path",
@@ -800,6 +800,43 @@
           "from": "caller",
           "as": "person_id",
           "description": "Whose pick, supplied by the mount. Never read from the request."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
+    },
+    "set_ai_role_limits": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/ai-roles/{roleID}/limits",
+      "call": "SetAIRoleLimits",
+      "action": "ai.role.set_limits",
+      "tool": "ai_set_role_limits",
+      "title": "Set AI role limits",
+      "description": "Replace only the AI role's nine limits (zero means none, null means the limit does not apply). Name, prompt, switch and model are untouched. A change is kept as a revision with who saved it and takes effect on the next resolve. A limit left out of the body is cleared, so send the ones to keep.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "roleID",
+          "refers": "ai.ai_role",
+          "description": "The AI role."
+        },
+        {
+          "from": "caller",
+          "as": "saved_by",
+          "description": "Who saved, supplied by the mount. Never read from the request."
         },
         {
           "from": "body",

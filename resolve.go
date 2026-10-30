@@ -96,7 +96,7 @@ func (m *accountManager) accountOf(ctx context.Context, agencyID string, r AIRol
 
 func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r AIRole, a Account) ([]LimitInForce, error) {
 	rl, al := r.Limits(), accountLimits(a)
-	out := []LimitInForce{{Limit: "tokens per call", Max: lowerNonZero(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall)), Source: limitSource(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall))}}
+	out := []LimitInForce{{Limit: "tokens per call", Field: "tokens_per_call", Max: lowerNonZero(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall)), Source: limitSource(models.Count(al.TokensPerCall), models.Count(rl.TokensPerCall))}}
 	for _, ls := range limitSpecs {
 		req, tok, err := m.sum(ctx, agencyID, a.ID, r.ID, ls.window)
 		if err != nil {
@@ -106,7 +106,7 @@ func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r A
 		if ls.tokens {
 			used = tok
 		}
-		out = append(out, LimitInForce{Limit: ls.name, Max: lowerNonZero(models.Count(ls.max(al)), models.Count(ls.max(rl))), Used: used, Source: limitSource(models.Count(ls.max(al)), models.Count(ls.max(rl)))})
+		out = append(out, LimitInForce{Limit: ls.name, Field: ls.field, Max: lowerNonZero(models.Count(ls.max(al)), models.Count(ls.max(rl))), Used: used, Source: limitSource(models.Count(ls.max(al)), models.Count(ls.max(rl)))})
 	}
 	return out, nil
 }
