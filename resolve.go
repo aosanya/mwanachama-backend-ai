@@ -9,7 +9,11 @@ import (
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
 )
 
-const noAccountMapped = "no account is mapped"
+const (
+	noAccountMapped    = "no account is mapped"
+	accountFromRole    = "role"
+	accountFromDefault = "default"
+)
 
 func (m *accountManager) SetAIRoleMapping(ctx context.Context, agencyID, roleID string, in AIRoleMappingInput) (AIRole, error) {
 	held, err := m.GetAIRole(ctx, agencyID, roleID)
@@ -57,21 +61,37 @@ func (m *accountManager) ResolveAIRole(ctx context.Context, agencyID, roleID str
 	if out.Parts, err = m.instructionParts(ctx, agencyID, r); err != nil {
 		return Resolution{}, err
 	}
-	if r.AccountID == "" {
-		out.Message = noAccountMapped
-		return out, nil
-	}
-	a, err := m.GetAccount(ctx, agencyID, r.AccountID)
-	if errors.Is(err, ErrAccountNotFound) {
-		out.Message = noAccountMapped
-		return out, nil
-	}
+	a, source, err := m.accountOf(ctx, agencyID, r)
 	if err != nil {
 		return Resolution{}, err
 	}
-	out.Account = &a
-	out.Limits, err = m.limitsInForce(ctx, agencyID, r, a)
+	if a == nil {
+		out.Message = noAccountMapped
+		return out, nil
+	}
+	out.Account, out.AccountSource = a, source
+	out.Limits, err = m.limitsInForce(ctx, agencyID, r, *a)
 	return out, err
+}
+
+func (m *accountManager) accountOf(ctx context.Context, agencyID string, r AIRole) (*Account, string, error) {
+	if r.AccountID != "" {
+		a, err := m.GetAccount(ctx, agencyID, r.AccountID)
+		if err == nil {
+			return &a, accountFromRole, nil
+		}
+		if !errors.Is(err, ErrAccountNotFound) {
+			return nil, "", err
+		}
+	}
+	a, err := m.GetDefaultAccount(ctx, agencyID)
+	if errors.Is(err, ErrNoDefaultAccount) {
+		return nil, "", nil
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	return &a, accountFromDefault, nil
 }
 
 func (m *accountManager) limitsInForce(ctx context.Context, agencyID string, r AIRole, a Account) ([]LimitInForce, error) {

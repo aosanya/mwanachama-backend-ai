@@ -90,11 +90,12 @@ type InstructionPart struct {
 }
 
 type Resolution struct {
-	AIRoleID     string            `json:"ai_role_id"`
-	AgencyRoleID string            `json:"agency_role_id"`
-	Instructions string            `json:"instructions"`
-	Parts        []InstructionPart `json:"parts"`
-	Account      *Account          `json:"account,omitempty"`
-	Limits       []LimitInForce    `json:"limits,omitempty"`
-	Message      string            `json:"message,omitempty"`
+	AIRoleID      string            `json:"ai_role_id"`
+	AgencyRoleID  string            `json:"agency_role_id"`
+	Instructions  string            `json:"instructions"`
+	Parts         []InstructionPart `json:"parts"`
+	Account       *Account          `json:"account,omitempty"`
+	AccountSource string            `json:"account_source,omitempty"`
+	Limits        []LimitInForce    `json:"limits,omitempty"`
+	Message       string            `json:"message,omitempty"`
 }

@@ -138,7 +138,16 @@ func (m *accountManager) DeleteAccount(ctx context.Context, agencyID, accountID 
 	if err := m.st.Query(ctx, roleAccount).Where("id = ?", held.ID).Delete(&struct{}{}).Error; err != nil {
 		return Account{}, fmt.Errorf("DeleteAccount: %w", err)
 	}
+	if err := m.releaseRoles(ctx, agencyID, held.ID); err != nil {
+		return Account{}, fmt.Errorf("DeleteAccount: %w", err)
+	}
 	return held, nil
+}
+
+func (m *accountManager) releaseRoles(ctx context.Context, agencyID, accountID string) error {
+	return m.st.Query(ctx, roleAIRole).
+		Where("agency_id = ? AND account_id = ?", agencyID, accountID).
+		Updates(map[string]any{"account_id": "", "updated_at": m.now()}).Error
 }
 
 func (m *accountManager) SetAccountKey(ctx context.Context, agencyID, accountID string, in KeyInput) (Account, error) {
