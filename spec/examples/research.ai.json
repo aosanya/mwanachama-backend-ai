@@ -44,6 +44,12 @@
       "name": "listed_model",
       "table": "listed_models",
       "description": "A model name listed for a provider kind."
+    },
+    {
+      "role": "chat_pick",
+      "name": "preferred_model",
+      "table": "preferred_models",
+      "description": "The model a person picked in the chat."
     }
   ]
 }

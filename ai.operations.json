@@ -755,6 +755,63 @@
         }
       ],
       "status": 200
+    },
+    "list_chat_models": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/chat-models",
+      "call": "ListChatModels",
+      "action": "ai.chat_model.list",
+      "tool": "ai_list_chat_models",
+      "title": "List chat models",
+      "description": "The models the chat box offers: the agency's enabled accounts the admin allowed in the chat, in the Models page's order, each under its chat label or else its model name, with the one the caller picked (else the first) marked picked. No key or address is shown.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "caller",
+          "as": "person_id",
+          "description": "Whose pick, supplied by the mount. Never read from the request."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "pick_chat_model": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/chat-models/pick",
+      "call": "PickChatModel",
+      "action": "ai.chat_model.pick",
+      "tool": "ai_pick_chat_model",
+      "title": "Pick chat model",
+      "description": "Keep the caller's choice of model in the chat box. Only a model the chat may use can be picked. Answers the chat models with the pick marked.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "caller",
+          "as": "person_id",
+          "description": "Whose pick, supplied by the mount. Never read from the request."
+        },
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
     }
   },
   "errors": {
@@ -777,6 +834,7 @@
     "ErrInvalidRole": 400,
     "ErrDuplicateRoleName": 409,
     "ErrRevisionNotFound": 404,
-    "ErrInvalidModelList": 400
+    "ErrInvalidModelList": 400,
+    "ErrChatModelUnavailable": 409
   }
 }

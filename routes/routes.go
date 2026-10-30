@@ -33,6 +33,8 @@ var Sentinels = map[string]error{
 	"ErrDuplicateRoleName": ai.ErrDuplicateRoleName,
 	"ErrRevisionNotFound":  ai.ErrRevisionNotFound,
 	"ErrInvalidModelList":  ai.ErrInvalidModelList,
+
+	"ErrChatModelUnavailable": ai.ErrChatModelUnavailable,
 }
 
 var AnonymousActions = []string{}

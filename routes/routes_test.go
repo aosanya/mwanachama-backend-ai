@@ -106,6 +106,8 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"GET /agencies/{agencyID}/agency-roles/{agencyRoleID}/resolve",
 		"GET /agencies/{agencyID}/models",
 		"POST /agencies/{agencyID}/accounts/{accountID}/models/refresh",
+		"GET /agencies/{agencyID}/chat-models",
+		"PUT /agencies/{agencyID}/chat-models/pick",
 	}
 	sort.Strings(want)
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {

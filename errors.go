@@ -17,6 +17,8 @@ var (
 	ErrRevisionNotFound  = errors.New("revision not found")
 	ErrInvalidModelList  = errors.New("invalid model list")
 
+	ErrChatModelUnavailable = errors.New("this model cannot be used in the chat")
+
 	ErrInvalidChat     = errors.New("invalid chat request")
 	ErrChatUnsupported = errors.New("this provider cannot chat with tools yet")
 	ErrAccountOff      = errors.New("this account is turned off")

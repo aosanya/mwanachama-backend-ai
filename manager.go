@@ -42,6 +42,7 @@ type Manager interface {
 	RoleManager
 	UsageManager
 	ModelManager
+	ChatModelManager
 	KeyReader
 	identity.Owner
 }
@@ -87,6 +88,7 @@ func NewManager(db *gorm.DB, s *spec.Spec, opts ...Option) (Manager, error) {
 		roleAIRole:       models.AIRole{},
 		roleRevision:     models.AIRoleRevision{},
 		roleModelEntry:   models.ModelEntry{},
+		roleChatPick:     models.ChatPick{},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("NewManager: %w", err)

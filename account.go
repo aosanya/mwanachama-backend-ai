@@ -141,6 +141,9 @@ func (m *accountManager) DeleteAccount(ctx context.Context, agencyID, accountID 
 	if err := m.releaseRoles(ctx, agencyID, held.ID); err != nil {
 		return Account{}, fmt.Errorf("DeleteAccount: %w", err)
 	}
+	if err := m.forgetPicks(ctx, agencyID, held.ID); err != nil {
+		return Account{}, fmt.Errorf("DeleteAccount: %w", err)
+	}
 	return held, nil
 }
 

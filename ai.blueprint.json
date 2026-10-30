@@ -664,6 +664,52 @@
           ]
         }
       ]
+    },
+    {
+      "role": "chat_pick",
+      "description": "The model one person picked in the chat box of one agency. One row per person.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, the agency and the person.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The agency whose chat the pick is for.",
+          "required": true
+        },
+        {
+          "name": "person_id",
+          "type": "string",
+          "description": "The signed-in person, supplied by the host. Never read from a request.",
+          "required": true
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The account the person picked.",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "description": "When the person last picked.",
+          "required": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "pick_account",
+          "description": "Removing the picks of an account.",
+          "fields": [
+            "agency_id",
+            "account_id"
+          ]
+        }
+      ]
     }
   ]
 }

@@ -44,6 +44,12 @@
       "name": "model_entry",
       "table": "model_entries",
       "description": "A model name listed for a provider kind."
+    },
+    {
+      "role": "chat_pick",
+      "name": "chat_pick",
+      "table": "chat_picks",
+      "description": "The model a person picked in the chat."
     }
   ]
 }
