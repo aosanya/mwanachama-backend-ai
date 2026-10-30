@@ -27,6 +27,7 @@ type Account struct {
 	LastTestMs        int    `json:"last_test_ms"`
 	ChatEnabled       bool   `json:"chat_enabled"`
 	ChatLabel         string `json:"chat_label"`
+	IsDefault         bool   `json:"default"`
 	TokensPerCall     *int   `json:"tokens_per_call"`
 	TokensPerDay      *int   `json:"tokens_per_day"`
 	TokensPerMonth    *int   `json:"tokens_per_month"`

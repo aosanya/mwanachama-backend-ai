@@ -92,6 +92,8 @@ func TestRoutesAreTheDeclaredTable(t *testing.T) {
 		"PUT /agencies/{agencyID}/accounts/{accountID}",
 		"PUT /agencies/{agencyID}/accounts/{accountID}/key",
 		"PUT /agencies/{agencyID}/accounts/{accountID}/limits",
+		"PUT /agencies/{agencyID}/accounts/{accountID}/default",
+		"GET /agencies/{agencyID}/default-account",
 		"DELETE /agencies/{agencyID}/ai-roles/{roleID}",
 		"GET /agencies/{agencyID}/ai-roles",
 		"GET /agencies/{agencyID}/ai-roles/{roleID}",
@@ -185,5 +187,27 @@ func TestSetLimitsRoute(t *testing.T) {
 	_, got := do(t, srv, "GET", "/agencies/ag-1/accounts/"+id, "")
 	if !strings.Contains(got, `"tokens_per_day":8`) {
 		t.Fatalf("refusals changed limits: %s", got)
+	}
+}
+
+func TestDefaultAccountRoutes(t *testing.T) {
+	srv := newServer(t)
+	code, out := do(t, srv, "GET", "/agencies/ag-1/default-account", "")
+	if code != 404 || !strings.Contains(out, "Mark a default AI account under Models before running a test") {
+		t.Fatalf("none marked: %d %s", code, out)
+	}
+	_, body := do(t, srv, "POST", "/agencies/ag-1/accounts", `{"name":"main","provider":"openai_compatible","base_url":"https://m.example.test/v1","model_name":"synthetic","status":"enabled"}`)
+	id := between(body, `"id":"`, `"`)
+	if code, out := do(t, srv, "PUT", "/agencies/ag-1/accounts/"+id+"/default", ""); code != 200 || !strings.Contains(out, `"default":true`) {
+		t.Fatalf("mark: %d %s", code, out)
+	}
+	if code, out := do(t, srv, "GET", "/agencies/ag-1/default-account", ""); code != 200 || !strings.Contains(out, `"id":"`+id+`"`) {
+		t.Fatalf("read: %d %s", code, out)
+	}
+	if code, _ := do(t, srv, "PUT", "/agencies/ag-1/accounts/nope/default", ""); code != 404 {
+		t.Fatalf("unknown account got %d", code)
+	}
+	if code, _ := do(t, srv, "PUT", "/agencies/ag-2/accounts/"+id+"/default", ""); code != 404 {
+		t.Fatalf("other agency got %d", code)
 	}
 }

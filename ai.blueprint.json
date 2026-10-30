@@ -94,6 +94,11 @@
           "matches": "chat_label"
         },
         {
+          "name": "is_default",
+          "type": "bool",
+          "description": "Whether the agency marked this account as its default. At most one account of an agency is the default; marking another moves it. Written by the set default operation only."
+        },
+        {
           "name": "tokens_per_call",
           "type": "int",
           "description": "The most tokens one call may use. Null means it does not apply; zero means none.",

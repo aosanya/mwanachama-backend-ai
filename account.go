@@ -45,6 +45,7 @@ func (m *accountManager) nameTaken(ctx context.Context, agencyID, name, except s
 func (m *accountManager) CreateAccount(ctx context.Context, agencyID string, in Account) (Account, error) {
 	in.AgencyID = agencyID
 	in.KeySet = false
+	in.IsDefault = false
 	in.ForgetTest()
 	if err := m.valid(in); err != nil {
 		return Account{}, err

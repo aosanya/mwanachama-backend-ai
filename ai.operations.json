@@ -133,6 +133,53 @@
         }
       ]
     },
+    "set_default_account": {
+      "method": "PUT",
+      "path": "/agencies/{agencyID}/accounts/{accountID}/default",
+      "call": "SetDefaultAccount",
+      "action": "ai.account.default_set",
+      "tool": "ai_set_default_account",
+      "title": "Mark default",
+      "description": "Mark the account as the agency's default. A second mark moves it: only one account of an agency is the default at a time. A test run spends from the default.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "path",
+          "as": "accountID",
+          "description": "The account to mark."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_default_account": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/default-account",
+      "call": "GetDefaultAccount",
+      "action": "ai.account.default_read",
+      "tool": "ai_get_default_account",
+      "title": "Read default",
+      "description": "Read the agency's default account. With none marked it answers a refusal that says to mark one under Models.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
     "delete_account": {
       "method": "DELETE",
       "path": "/agencies/{agencyID}/accounts/{accountID}",
@@ -698,6 +745,7 @@
     "ErrInvalidKey": 400,
     "ErrNoMasterKey": 409,
     "ErrNoKey": 404,
+    "ErrNoDefaultAccount": 404,
     "ErrUnsupportedKind": 400,
     "ErrInvalidChat": 400,
     "ErrChatUnsupported": 400,

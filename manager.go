@@ -25,6 +25,8 @@ type AccountManager interface {
 	UpdateAccount(ctx context.Context, agencyID, accountID string, in Account) (Account, error)
 	DeleteAccount(ctx context.Context, agencyID, accountID string) (Account, error)
 	SetAccountLimits(ctx context.Context, agencyID, accountID string, in Limits) (Account, error)
+	SetDefaultAccount(ctx context.Context, agencyID, accountID string) (Account, error)
+	GetDefaultAccount(ctx context.Context, agencyID string) (Account, error)
 	SetAccountKey(ctx context.Context, agencyID, accountID string, in KeyInput) (Account, error)
 	TestAccount(ctx context.Context, agencyID, accountID string, in KeyInput) (Account, error)
 	ChatAccount(ctx context.Context, agencyID, accountID string, in ChatInput) (ChatReply, error)

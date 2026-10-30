@@ -9,6 +9,7 @@ var (
 	ErrInvalidKey        = errors.New("invalid key")
 	ErrNoMasterKey       = errors.New("no master key is configured, so no key can be stored")
 	ErrNoKey             = errors.New("this account has no key")
+	ErrNoDefaultAccount  = errors.New("Mark a default AI account under Models before running a test")
 	ErrUnsupportedKind   = errors.New("no adapter exists for this provider kind")
 	ErrRoleNotFound      = errors.New("AI role not found")
 	ErrInvalidRole       = errors.New("invalid AI role")

@@ -77,7 +77,7 @@ func TestToolsListAndKeyNeverReturned(t *testing.T) {
 	for _, tool := range list.Tools {
 		have[tool.Name] = true
 	}
-	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_check_limits", "ai_list_usage", "ai_list_test_run_usage", "ai_record_usage", "ai_test_account", "ai_list_models", "ai_refresh_models"} {
+	for _, want := range []string{"ai_create_account", "ai_list_accounts", "ai_get_account", "ai_update_account", "ai_delete_account", "ai_set_account_key", "ai_set_limits", "ai_set_default_account", "ai_get_default_account", "ai_check_limits", "ai_list_usage", "ai_list_test_run_usage", "ai_record_usage", "ai_test_account", "ai_list_models", "ai_refresh_models"} {
 		if !have[want] {
 			t.Fatalf("missing tool %s in %v", want, have)
 		}
@@ -186,5 +186,40 @@ func TestTestLimitsAndATestRunsUseGoThroughTheTools(t *testing.T) {
 	listed, isErr := call(t, cs, "ai_list_test_run_usage", map[string]any{"agencyID": "ag-1", "testRunID": "run-1"})
 	if isErr || !strings.Contains(listed, `"step":"step-1"`) || !strings.Contains(listed, `"tokens":110`) {
 		t.Fatalf("list: %s", listed)
+	}
+}
+
+func TestDefaultAccountTools(t *testing.T) {
+	cs := connect(t)
+	got, isErr := call(t, cs, "ai_get_default_account", map[string]any{"agencyID": "ag-1"})
+	if !isErr || !strings.Contains(got, "Mark a default AI account under Models before running a test") {
+		t.Fatalf("none marked: %v %s", isErr, got)
+	}
+	ids := map[string]string{}
+	for _, name := range []string{"first", "second"} {
+		out, isErr := call(t, cs, "ai_create_account", map[string]any{"agencyID": "ag-1", "name": name, "provider": "openai_compatible", "base_url": "https://m.example.test/v1", "model_name": "synthetic", "status": "enabled"})
+		if isErr {
+			t.Fatalf("create: %s", out)
+		}
+		var created struct {
+			StructuredContent struct {
+				ID string `json:"id"`
+			} `json:"structuredContent"`
+		}
+		_ = json.Unmarshal([]byte(out), &created)
+		ids[name] = created.StructuredContent.ID
+	}
+	for _, name := range []string{"first", "second"} {
+		out, isErr := call(t, cs, "ai_set_default_account", map[string]any{"agencyID": "ag-1", "accountID": ids[name]})
+		if isErr || !strings.Contains(out, `"default":true`) {
+			t.Fatalf("mark %s: %v %s", name, isErr, out)
+		}
+		read, isErr := call(t, cs, "ai_get_default_account", map[string]any{"agencyID": "ag-1"})
+		if isErr || !strings.Contains(read, `"id":"`+ids[name]+`"`) {
+			t.Fatalf("read after %s: %v %s", name, isErr, read)
+		}
+	}
+	if _, isErr := call(t, cs, "ai_set_default_account", map[string]any{"agencyID": "ag-1", "accountID": "missing"}); !isErr {
+		t.Fatal("a missing account was marked")
 	}
 }
