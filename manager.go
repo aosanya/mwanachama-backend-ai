@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/aosanya/mwanachama-backend-shared/identity"
 	"github.com/aosanya/mwanachama-backend-shared/spec"
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
 
@@ -42,6 +43,7 @@ type Manager interface {
 	UsageManager
 	ModelManager
 	KeyReader
+	identity.Owner
 }
 
 type Option func(*accountManager)
