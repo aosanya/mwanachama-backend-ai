@@ -67,16 +67,8 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 			continue
 		}
 		id := fmt.Sprintf("%s|%s|%s|%s|%s", agencyID, in.AccountID, in.RoleID, window, start)
-		var n int64
-		q := m.st.Query(ctx, roleUsage).Where("id = ?", id)
-		if err := q.Count(&n).Error; err != nil {
+		if err := m.ensureUsageRow(ctx, id, Usage{ID: id, AgencyID: agencyID, AccountID: in.AccountID, RoleID: in.RoleID, WindowKind: window, WindowStart: start}); err != nil {
 			return Usage{}, err
-		}
-		if n == 0 {
-			row := Usage{ID: id, AgencyID: agencyID, AccountID: in.AccountID, RoleID: in.RoleID, WindowKind: window, WindowStart: start}
-			if err := m.st.Insert(ctx, roleUsage, row); err != nil {
-				return Usage{}, err
-			}
 		}
 		err := m.st.Query(ctx, roleUsage).Where("id = ?", id).Updates(map[string]any{
 			"requests":   gorm.Expr("requests + 1"),
@@ -98,6 +90,29 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 		}
 	}
 	return last, nil
+}
+
+func (m *accountManager) usageRowExists(ctx context.Context, id string) (bool, error) {
+	var n int64
+	if err := m.st.Query(ctx, roleUsage).Where("id = ?", id).Count(&n).Error; err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
+func (m *accountManager) ensureUsageRow(ctx context.Context, id string, row Usage) error {
+	exists, err := m.usageRowExists(ctx, id)
+	if err != nil || exists {
+		return err
+	}
+	insertErr := m.st.Insert(ctx, roleUsage, row)
+	if insertErr == nil {
+		return nil
+	}
+	if exists, err := m.usageRowExists(ctx, id); err == nil && exists {
+		return nil
+	}
+	return insertErr
 }
 
 type tally struct{ Requests, Tokens int }
