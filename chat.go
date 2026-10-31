@@ -20,7 +20,7 @@ type (
 
 const (
 	defaultChatTokens = 1024
-	maxChatTokens     = 4096
+	maxChatTokens     = 16384
 	chatTimeout       = 2 * time.Minute
 )
 
@@ -125,7 +125,7 @@ func chatReply(reply Reply) ChatReply {
 		}
 		message.ToolCalls = append(message.ToolCalls, ChatToolCall{ID: id, Name: c.Name, Arguments: objectOrEmpty(c.Arguments)})
 	}
-	return ChatReply{Message: message, InputTokens: reply.InputTokens, OutputTokens: reply.OutputTokens}
+	return ChatReply{Message: message, InputTokens: reply.InputTokens, OutputTokens: reply.OutputTokens, FinishReason: reply.FinishReason}
 }
 
 func objectOrEmpty(raw json.RawMessage) json.RawMessage {

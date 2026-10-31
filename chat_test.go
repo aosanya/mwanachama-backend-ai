@@ -175,3 +175,28 @@ func TestChatSendsTheConversationAndToolsInTheAnthropicWireFormat(t *testing.T) 
 		t.Fatalf("reply %+v", got)
 	}
 }
+
+func TestAChatAnswerCarriesTheProvidersReasonForStopping(t *testing.T) {
+	cases := []struct {
+		name     string
+		provider string
+		body     string
+		want     string
+	}{
+		{"openai compatible", "openai_compatible", `{"choices":[{"finish_reason":"length","message":{"content":""}}],"usage":{"prompt_tokens":5,"completion_tokens":4096}}`, "length"},
+		{"anthropic", "anthropic", `{"stop_reason":"max_tokens","content":[],"usage":{"input_tokens":5,"output_tokens":4096}}`, "max_tokens"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			srv, _ := fakeProvider(t, 200, c.body)
+			m, _, a := chatManager(t, c.provider, srv.URL, nil)
+			got, err := m.ChatAccount(ctx, "ag-1", a.ID, ai.ChatInput{Messages: []ai.ChatMessage{{Role: "user", Content: "go"}}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.FinishReason != c.want {
+				t.Errorf("finish reason = %q, want %q", got.FinishReason, c.want)
+			}
+		})
+	}
+}

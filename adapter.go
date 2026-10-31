@@ -42,6 +42,7 @@ type Reply struct {
 	ToolCalls    []ToolCall
 	InputTokens  int
 	OutputTokens int
+	FinishReason string
 }
 
 type Adapter interface {
@@ -101,7 +102,8 @@ func (openAIAdapter) BuildRequest(ctx context.Context, a Account, key string, r 
 func (openAIAdapter) ParseReply(body []byte) (Reply, error) {
 	var v struct {
 		Choices []struct {
-			Message struct {
+			FinishReason string `json:"finish_reason"`
+			Message      struct {
 				Content   string `json:"content"`
 				ToolCalls []struct {
 					ID       string `json:"id"`
@@ -123,7 +125,7 @@ func (openAIAdapter) ParseReply(body []byte) (Reply, error) {
 	if len(v.Choices) == 0 {
 		return Reply{}, errors.New("no choices in the answer")
 	}
-	out := Reply{Text: v.Choices[0].Message.Content, InputTokens: v.Usage.Prompt, OutputTokens: v.Usage.Completion}
+	out := Reply{Text: v.Choices[0].Message.Content, InputTokens: v.Usage.Prompt, OutputTokens: v.Usage.Completion, FinishReason: v.Choices[0].FinishReason}
 	for _, c := range v.Choices[0].Message.ToolCalls {
 		out.ToolCalls = append(out.ToolCalls, ToolCall{ID: c.ID, Name: c.Function.Name, Arguments: json.RawMessage(c.Function.Arguments)})
 	}
@@ -160,7 +162,8 @@ func (anthropicAdapter) BuildRequest(ctx context.Context, a Account, key string,
 
 func (anthropicAdapter) ParseReply(body []byte) (Reply, error) {
 	var v struct {
-		Content []struct {
+		StopReason string `json:"stop_reason"`
+		Content    []struct {
 			Type  string          `json:"type"`
 			Text  string          `json:"text"`
 			ID    string          `json:"id"`
@@ -175,7 +178,7 @@ func (anthropicAdapter) ParseReply(body []byte) (Reply, error) {
 	if err := json.Unmarshal(body, &v); err != nil {
 		return Reply{}, err
 	}
-	out := Reply{InputTokens: v.Usage.Input, OutputTokens: v.Usage.Output}
+	out := Reply{InputTokens: v.Usage.Input, OutputTokens: v.Usage.Output, FinishReason: v.StopReason}
 	for _, c := range v.Content {
 		switch c.Type {
 		case "text":
@@ -215,7 +218,8 @@ func (geminiAdapter) BuildRequest(ctx context.Context, a Account, key string, r 
 func (geminiAdapter) ParseReply(body []byte) (Reply, error) {
 	var v struct {
 		Candidates []struct {
-			Content struct {
+			FinishReason string `json:"finishReason"`
+			Content      struct {
 				Parts []struct {
 					Text         string `json:"text"`
 					FunctionCall *struct {
@@ -236,7 +240,7 @@ func (geminiAdapter) ParseReply(body []byte) (Reply, error) {
 	if len(v.Candidates) == 0 {
 		return Reply{}, errors.New("no candidates in the answer")
 	}
-	out := Reply{InputTokens: v.Usage.Prompt, OutputTokens: v.Usage.Candidate}
+	out := Reply{InputTokens: v.Usage.Prompt, OutputTokens: v.Usage.Candidate, FinishReason: v.Candidates[0].FinishReason}
 	for _, p := range v.Candidates[0].Content.Parts {
 		if p.FunctionCall != nil {
 			out.ToolCalls = append(out.ToolCalls, ToolCall{Name: p.FunctionCall.Name, Arguments: p.FunctionCall.Args})

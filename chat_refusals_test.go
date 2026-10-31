@@ -33,7 +33,7 @@ func TestChatAsksForTheDefaultTokensAndNeverMoreThanTheCapOrTheAccountsLimit(t *
 	}{
 		{"none asked", 0, nil, 1024},
 		{"asked", 200, nil, 200},
-		{"too many asked", 100000, nil, 4096},
+		{"too many asked", 100000, nil, 16384},
 		{"account limit lower", 1000, ip(50), 50},
 		{"account limit higher", 30, ip(50), 30},
 	}

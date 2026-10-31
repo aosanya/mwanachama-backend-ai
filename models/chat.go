@@ -31,4 +31,5 @@ type ChatReply struct {
 	Message      ChatMessage `json:"message"`
 	InputTokens  int         `json:"input_tokens"`
 	OutputTokens int         `json:"output_tokens"`
+	FinishReason string      `json:"finish_reason,omitempty"`
 }
