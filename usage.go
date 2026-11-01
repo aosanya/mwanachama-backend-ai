@@ -92,27 +92,8 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 	return last, nil
 }
 
-func (m *accountManager) usageRowExists(ctx context.Context, id string) (bool, error) {
-	var n int64
-	if err := m.st.Query(ctx, roleUsage).Where("id = ?", id).Count(&n).Error; err != nil {
-		return false, err
-	}
-	return n > 0, nil
-}
-
 func (m *accountManager) ensureUsageRow(ctx context.Context, id string, row Usage) error {
-	exists, err := m.usageRowExists(ctx, id)
-	if err != nil || exists {
-		return err
-	}
-	insertErr := m.st.Insert(ctx, roleUsage, row)
-	if insertErr == nil {
-		return nil
-	}
-	if exists, err := m.usageRowExists(ctx, id); err == nil && exists {
-		return nil
-	}
-	return insertErr
+	return m.st.InsertOnce(ctx, roleUsage, row)
 }
 
 type tally struct{ Requests, Tokens int }
