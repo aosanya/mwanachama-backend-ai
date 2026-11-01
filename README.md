@@ -8,9 +8,9 @@ A Go library in the declared-domain shape of `mwanachama-backend-catalog`: objec
 
 ## Status
 
-Not built yet. This repository holds the requirements and the house rules; the code arrives row by row. See [documentation/](documentation/README.md).
+Built: eight declared objects, thirty declared operations and the model gateway, tested in memory (`go vet ./... && go test ./...` passes). What is left is on the board in [documentation/](documentation/README.md).
 
-## What it will do
+## What it does
 
 | Feature | In one line |
 |---|---|
