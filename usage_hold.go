@@ -64,18 +64,22 @@ func (m *accountManager) HoldRequest(ctx context.Context, agencyID string, in Ch
 
 func (h *RequestHold) Release() {
 	if h.finished.CompareAndSwap(false, true) {
-		h.m.holds.add(h.agencyID, h.check.AccountID, h.check.RoleID, -1)
+		h.drop()
 	}
 }
 
+func (h *RequestHold) drop() {
+	h.m.holds.add(h.agencyID, h.check.AccountID, h.check.RoleID, -1)
+}
+
 func (h *RequestHold) Settle(ctx context.Context, in UsageInput) (Usage, error) {
-	if h.finished.Load() {
-		return Usage{}, nil
-	}
 	gate := h.m.holds.gate(h.agencyID, h.check.AccountID)
 	gate.Lock()
 	defer gate.Unlock()
-	defer h.Release()
+	if !h.finished.CompareAndSwap(false, true) {
+		return Usage{}, nil
+	}
+	defer h.drop()
 	in.AccountID, in.RoleID = h.check.AccountID, h.check.RoleID
 	return h.m.RecordUsage(ctx, h.agencyID, in)
 }
