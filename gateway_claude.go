@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const modelRedirected = "the model's address redirected the request, which is not followed"
+
 var errUncarriable = errors.New("the request cannot be carried to this model")
 
 type openAIBody struct {
@@ -53,6 +55,8 @@ func (g *gateway) relayClaude(r *http.Request, a Account, key string, payload ma
 		return answered{body: body, tokensIn: reply.InputTokens, tokensOut: reply.OutputTokens}, nil
 	case ProbeUnreached:
 		return answered{}, &failure{http.StatusBadGateway, modelUnreached}
+	case ProbeRedirected:
+		return answered{}, &failure{http.StatusBadGateway, modelRedirected}
 	}
 	return answered{}, &failure{http.StatusBadGateway, modelErrored}
 }

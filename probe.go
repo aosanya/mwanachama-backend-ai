@@ -23,6 +23,7 @@ const (
 	ProbeRefused
 	ProbeUnreached
 	ProbeError
+	ProbeRedirected
 )
 
 type ProbeResult struct {
