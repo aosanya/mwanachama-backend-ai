@@ -19,9 +19,17 @@ var (
 	errNoMessages         = errors.New("the request has no messages this model can take")
 	errOnlySystem         = errors.New("this model needs at least one message besides the system prompt")
 	errBadArguments       = errors.New("a tool call's arguments are not a JSON object")
+	errNotFunction        = errors.New("only function tools can be carried to this model")
+	errToolNoName         = errors.New("a tool has no name")
+	errCallNoID           = errors.New("a tool call has no id")
+	errCallNoName         = errors.New("a tool call has no name")
+	errToolMessageNoID    = errors.New("a tool message has no tool_call_id")
 )
 
-const roleFunction = "function"
+const (
+	roleFunction     = "function"
+	toolTypeFunction = "function"
+)
 
 type openAIBody struct {
 	Messages            []openAIChatMessage `json:"messages"`
@@ -45,6 +53,7 @@ type openAIChatMessage struct {
 }
 
 type openAIChatTool struct {
+	Type     string `json:"type"`
 	Function struct {
 		Name        string         `json:"name"`
 		Description string         `json:"description"`
@@ -83,12 +92,28 @@ func claudeRequest(payload map[string]any, limit int) (Request, error) {
 	if err != nil {
 		return Request{}, err
 	}
-	tools := make([]Tool, 0, len(body.Tools))
-	for _, t := range body.Tools {
-		tools = append(tools, Tool{Name: t.Function.Name, Description: t.Function.Description, Parameters: parametersOrEmpty(t.Function.Parameters)})
+	tools, err := claudeTools(body.Tools)
+	if err != nil {
+		return Request{}, err
 	}
 	return Request{Messages: messages, Tools: tools, MaxTokens: chatMaxTokens(smallerAsk(body.MaxTokens, body.MaxCompletionTokens), limit)}, nil
 }
+
+func claudeTools(in []openAIChatTool) ([]Tool, error) {
+	tools := make([]Tool, 0, len(in))
+	for _, t := range in {
+		switch {
+		case t.Type != "" && t.Type != toolTypeFunction:
+			return nil, errNotFunction
+		case blank(t.Function.Name):
+			return nil, errToolNoName
+		}
+		tools = append(tools, Tool{Name: t.Function.Name, Description: t.Function.Description, Parameters: parametersOrEmpty(t.Function.Parameters)})
+	}
+	return tools, nil
+}
+
+func blank(text string) bool { return strings.TrimSpace(text) == "" }
 
 func smallerAsk(first, second int) int {
 	switch {
@@ -125,6 +150,9 @@ func claudeMessage(m openAIChatMessage) (Message, error) {
 	if err != nil {
 		return Message{}, err
 	}
+	if m.Role == roleTool && blank(m.ToolCallID) {
+		return Message{}, errToolMessageNoID
+	}
 	message := Message{Role: m.Role, Content: text, ToolCallID: m.ToolCallID}
 	switch m.Role {
 	case "developer":
@@ -133,6 +161,12 @@ func claudeMessage(m openAIChatMessage) (Message, error) {
 		message.Role, message.Content = roleUser, functionResult(m.Name, text)
 	}
 	for _, c := range m.ToolCalls {
+		switch {
+		case blank(c.ID):
+			return Message{}, errCallNoID
+		case blank(c.Function.Name):
+			return Message{}, errCallNoName
+		}
 		arguments, err := callArguments(c.Function.Arguments)
 		if err != nil {
 			return Message{}, err
