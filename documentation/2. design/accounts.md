@@ -6,6 +6,10 @@ HS122. An account is an agency's standing with one model provider. Two objects: 
 
 The agency id is an opaque string the host supplies in the address (`/agencies/{agencyID}/accounts`). It is bound by the address, never read from a body, and every read and write filters on it. Another agency's account answers as not found. A name is unique within one agency (a unique index on agency and name, plus a check that answers `ErrDuplicateName`).
 
+## What a create or a change asks for (HS541)
+
+`ai_create_account` and `ai_update_account` take the account's settings and its nine limits: `name`, `provider`, `base_url`, `model_name`, `status`, `chat_enabled`, `chat_label` and the nine limit keys (`routes/fields.go`). The fields the server sets are no input and a call that sends one is refused as an unknown argument, as every other tool does: `id`, `agency_id`, `key_set`, `default`, `last_test_result`, `last_tested_at`, `last_test_prompt`, `last_test_reply`, `last_test_ms`, `created_at` and `updated_at`. Over HTTP the same body is not refused: a server-set field in it is ignored and the server sets it, as it always did. What an absent limit does is in `role-limits.md`.
+
 ## The key
 
 `PUT .../key` replaces the key and answers the account with `key_set` true. Nothing returns it. The key is sealed with AES-256-GCM under a 32-byte master key passed with `WithMasterKey`; the stored value is a random nonce followed by the ciphertext, base64. With no master key `SetAccountKey` answers `ErrNoMasterKey` and stores nothing. The gateway reads a key through `KeyReader.AccountKey(ctx, agencyID, accountID)`, a Go method that no operation declares.

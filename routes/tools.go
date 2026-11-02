@@ -18,7 +18,7 @@ func BuildToolsFor(am ai.AccountManager, m Mount) ([]Tool, error) {
 		return nil, err
 	}
 	return dispatch.Tools(s, dispatch.Deps{
-		Manager: am, Errors: Sentinels, Authorize: m.Authorize, Caller: m.Caller,
+		Manager: am, Errors: Sentinels, Fields: Fields(), Authorize: m.Authorize, Caller: m.Caller,
 	})
 }
 
