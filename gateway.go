@@ -2,6 +2,7 @@ package ai
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -94,7 +95,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, fail.status, fail.sentence)
 		return
 	}
-	_, _ = hold.Settle(r.Context(), UsageInput{TokensIn: answer.tokensIn, TokensOut: answer.tokensOut})
+	_, _ = hold.Settle(context.WithoutCancel(r.Context()), UsageInput{TokensIn: answer.tokensIn, TokensOut: answer.tokensOut})
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(answer.body)
 }
