@@ -19,7 +19,7 @@ type requestHolds struct {
 
 func (h *requestHolds) gate(agencyID, accountID string) *sync.Mutex {
 	sum := fnv.New32a()
-	_, _ = sum.Write([]byte(writesKey(agencyID, accountID)))
+	_, _ = sum.Write([]byte(agencyID + "|" + accountID))
 	return &h.gates[sum.Sum32()%holdGates]
 }
 

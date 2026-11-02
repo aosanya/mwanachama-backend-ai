@@ -31,7 +31,6 @@ var chatProviders = map[string]bool{
 
 type chatSettings struct {
 	client *http.Client
-	writes usageWrites
 }
 
 func WithChatClient(c *http.Client) Option {

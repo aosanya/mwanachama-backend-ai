@@ -93,7 +93,7 @@ No declared table, column or index column may be a Postgres reserved word. `post
 
 `account.chat` lets a console run a tool-using chat against an account's model. It is stateless: the caller keeps the conversation, sends all of it each turn, and gets back one assistant message. When that message carries `tool_calls`, the caller runs them and sends the whole conversation again with the results as `tool` messages. The REST address is `POST /agencies/{agencyID}/accounts/{accountID}/chat` and the MCP tool is `ai_chat_account`; its arguments are the agency, `accountID`, `messages`, and optionally `tools` and `max_tokens`, and nothing else is accepted.
 
-A chat answer is returned before its usage is written. The usage is recorded in the background, one write at a time per account, because each write takes several round trips to the database. Any later read of that account's limits or usage, including the next chat call, waits for the pending write first, so a limit still stops the call after the one that reached it. A restart or crash can lose the usage of an answer whose write had not finished.
+A chat answer is returned after its usage is written. `ChatAccount` takes a request hold on the account, settles it with the answer's tokens and only then returns, so the next chat or gateway call on the account counts it and a limit still stops the call after the one that reached it ([ai-roles.md](ai-roles.md) describes the hold). The settle runs even when the caller has already gone, so a caller that cancels after the model answered does not lose the usage. A crash between the model's answer and the settle loses the usage of that answer.
 
 | Body field | Holds |
 | --- | --- |
