@@ -39,10 +39,6 @@ The policy runs at write time only. An account stored before a policy tightened 
 
 The policy receives the address and nothing else, so the key can never reach its error.
 
-## Not built here
-
-The test operation, usage counting and limit enforcement are HS123 and HS124. The five limits and the last-test fields are stored only; zero means none.
-
 ## Second domain
 
 `spec/examples/research.ai.json` names the same two roles `connection` and `credential`, so the module is exercised under words that differ from the default domain.
