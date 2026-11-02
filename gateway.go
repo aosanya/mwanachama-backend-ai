@@ -16,6 +16,8 @@ const (
 	modelErrored   = "the model answered with an error"
 )
 
+var gatewayTimeout = chatTimeout
+
 type GatewayCaller func(r *http.Request) (agencyID, agencyRoleID string, ok bool)
 
 type gateway struct {
@@ -26,7 +28,7 @@ type gateway struct {
 
 func NewGateway(m Manager, caller GatewayCaller, client *http.Client) http.Handler {
 	if client == nil {
-		client = http.DefaultClient
+		client = &http.Client{Timeout: gatewayTimeout}
 	}
 	return &gateway{m: m, caller: caller, client: client}
 }
