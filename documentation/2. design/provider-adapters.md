@@ -18,6 +18,8 @@ The key never appears in a URL or a body. Gemini accepts it as a query parameter
 
 A request that carries its key in a header of its own (`x-api-key`, `x-goog-api-key`) never follows a redirect. Go strips only `Authorization`, `Cookie` and `WWW-Authenticate` when a redirect leaves the host, so a base URL that answered `3xx` toward another host would have been sent the key there. `send` therefore stops at the first response for these kinds and answers `ProbeRedirected`, for every caller that goes through it (`Call` and the model lists). The Test, the console chat and the model list read it as any other error ("the model answered with an error"); the gateway answers 502 with "the model's address redirected the request, which is not followed". An `openai_compatible` request keeps the client's default, since its key travels in `Authorization`, which Go already drops on a cross-host redirect.
 
+Claude refuses what the other kinds accept, so its adapter shapes the body: `input_schema` always carries `type` `object` (a tool with `parameters` of `{}` or without a `type` is sent with it added, the caller's map left as it was), and an assistant turn never carries a whitespace-only text block, since Claude rejects a block with no non-whitespace text.
+
 ## Users
 
 The Test of an account (`httpProber`) is `Call` with one short prompt. The gateway uses `Call` for an `anthropic` account (HS624), reading the token counts from its `Reply` for usage; an `openai_compatible` account is still forwarded as the agent sent it.

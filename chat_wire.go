@@ -93,7 +93,7 @@ func withToolResult(messages []map[string]any, result map[string]any) []map[stri
 
 func anthropicBlocks(m Message) []map[string]any {
 	var blocks []map[string]any
-	if m.Content != "" {
+	if strings.TrimSpace(m.Content) != "" {
 		blocks = append(blocks, map[string]any{"type": "text", "text": m.Content})
 	}
 	for _, c := range m.ToolCalls {

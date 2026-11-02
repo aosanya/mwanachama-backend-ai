@@ -147,7 +147,7 @@ func (anthropicAdapter) BuildRequest(ctx context.Context, a Account, key string,
 	if len(r.Tools) > 0 {
 		tools := make([]map[string]any, 0, len(r.Tools))
 		for _, t := range r.Tools {
-			tools = append(tools, map[string]any{"name": t.Name, "description": t.Description, "input_schema": t.Parameters})
+			tools = append(tools, map[string]any{"name": t.Name, "description": t.Description, "input_schema": objectSchema(t.Parameters)})
 		}
 		payload["tools"] = tools
 	}
@@ -158,6 +158,18 @@ func (anthropicAdapter) BuildRequest(ctx context.Context, a Account, key string,
 	req.Header.Set("x-api-key", key)
 	req.Header.Set("anthropic-version", anthropicVersion)
 	return req, nil
+}
+
+func objectSchema(parameters map[string]any) map[string]any {
+	if parameters["type"] != nil {
+		return parameters
+	}
+	schema := make(map[string]any, len(parameters)+1)
+	for name, value := range parameters {
+		schema[name] = value
+	}
+	schema["type"] = "object"
+	return schema
 }
 
 func (anthropicAdapter) ParseReply(body []byte) (Reply, error) {

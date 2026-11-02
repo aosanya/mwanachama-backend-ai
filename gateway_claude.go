@@ -13,7 +13,15 @@ import (
 
 const modelRedirected = "the model's address redirected the request, which is not followed"
 
-var errUncarriable = errors.New("the request cannot be carried to this model")
+var (
+	errUncarriable        = errors.New("the request cannot be carried to this model")
+	errNotChatCompletions = errors.New("the request is not in the OpenAI chat-completions shape")
+	errNoMessages         = errors.New("the request has no messages this model can take")
+	errOnlySystem         = errors.New("this model needs at least one message besides the system prompt")
+	errBadArguments       = errors.New("a tool call's arguments are not a JSON object")
+)
+
+const roleFunction = "function"
 
 type openAIBody struct {
 	Messages            []openAIChatMessage `json:"messages"`
@@ -24,6 +32,7 @@ type openAIBody struct {
 
 type openAIChatMessage struct {
 	Role       string          `json:"role"`
+	Name       string          `json:"name"`
 	Content    json.RawMessage `json:"content"`
 	ToolCallID string          `json:"tool_call_id"`
 	ToolCalls  []struct {
@@ -64,23 +73,15 @@ func (g *gateway) relayClaude(r *http.Request, a Account, key string, payload ma
 func claudeRequest(payload map[string]any, limit int) (Request, error) {
 	raw, _ := json.Marshal(payload)
 	var body openAIBody
-	if err := json.Unmarshal(raw, &body); err != nil || len(body.Messages) == 0 {
-		return Request{}, errors.New("the request has no messages this model can take")
+	if err := json.Unmarshal(raw, &body); err != nil {
+		return Request{}, errNotChatCompletions
 	}
-	messages := make([]Message, 0, len(body.Messages))
-	for _, m := range body.Messages {
-		text, err := contentText(m.Content)
-		if err != nil {
-			return Request{}, err
-		}
-		message := Message{Role: m.Role, Content: text, ToolCallID: m.ToolCallID}
-		if m.Role == "developer" {
-			message.Role = roleSystem
-		}
-		for _, c := range m.ToolCalls {
-			message.ToolCalls = append(message.ToolCalls, ToolCall{ID: c.ID, Name: c.Function.Name, Arguments: objectOrEmpty(json.RawMessage(c.Function.Arguments))})
-		}
-		messages = append(messages, message)
+	if len(body.Messages) == 0 {
+		return Request{}, errNoMessages
+	}
+	messages, err := claudeMessages(body.Messages)
+	if err != nil {
+		return Request{}, err
 	}
 	tools := make([]Tool, 0, len(body.Tools))
 	for _, t := range body.Tools {
@@ -91,6 +92,71 @@ func claudeRequest(payload map[string]any, limit int) (Request, error) {
 		asked = body.MaxCompletionTokens
 	}
 	return Request{Messages: messages, Tools: tools, MaxTokens: chatMaxTokens(asked, limit)}, nil
+}
+
+func claudeMessages(in []openAIChatMessage) ([]Message, error) {
+	messages := make([]Message, 0, len(in))
+	spoken := false
+	for _, m := range in {
+		message, err := claudeMessage(m)
+		if err != nil {
+			return nil, err
+		}
+		if carriesNothing(message) {
+			continue
+		}
+		spoken = spoken || message.Role != roleSystem
+		messages = append(messages, message)
+	}
+	if !spoken {
+		return nil, errOnlySystem
+	}
+	return messages, nil
+}
+
+func claudeMessage(m openAIChatMessage) (Message, error) {
+	text, err := contentText(m.Content)
+	if err != nil {
+		return Message{}, err
+	}
+	message := Message{Role: m.Role, Content: text, ToolCallID: m.ToolCallID}
+	switch m.Role {
+	case "developer":
+		message.Role = roleSystem
+	case roleFunction:
+		message.Role, message.Content = roleUser, functionResult(m.Name, text)
+	}
+	for _, c := range m.ToolCalls {
+		arguments, err := callArguments(c.Function.Arguments)
+		if err != nil {
+			return Message{}, err
+		}
+		message.ToolCalls = append(message.ToolCalls, ToolCall{ID: c.ID, Name: c.Function.Name, Arguments: arguments})
+	}
+	return message, nil
+}
+
+func carriesNothing(m Message) bool {
+	return m.Role != roleTool && len(m.ToolCalls) == 0 && strings.TrimSpace(m.Content) == ""
+}
+
+func functionResult(name, text string) string {
+	if name == "" {
+		return text
+	}
+	return name + ": " + text
+}
+
+func callArguments(text string) (json.RawMessage, error) {
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" || trimmed == "null" {
+		return json.RawMessage("{}"), nil
+	}
+	var object map[string]json.RawMessage
+	if json.Unmarshal([]byte(trimmed), &object) != nil || object == nil {
+		return nil, errBadArguments
+	}
+	return json.RawMessage(trimmed), nil
 }
 
 func contentText(raw json.RawMessage) (string, error) {
