@@ -142,6 +142,16 @@ func TestAFunctionResultKeepsItsNameWhenItBecomesAUserMessage(t *testing.T) {
 	}
 }
 
+func TestTheRefusalOfAToolCallWhoseArgumentsAreNotAJSONObjectNamesTheCall(t *testing.T) {
+	fc := &fakeClaude{reply: claudeReply}
+	h, _, _, _ := gatewaySetupKind(t, "anthropic", fc, 0)
+	rec := post(h, `{"messages":[{"role":"user","content":"x"},{"role":"assistant","content":null,"tool_calls":[{"id":"c7","type":"function","function":{"name":"lookup","arguments":"[1]"}},{"id":"c8","type":"function","function":{"name":"other","arguments":"{}"}}]}]}`)
+	body := rec.Body.String()
+	if rec.Code != http.StatusBadRequest || !strings.Contains(body, `\"lookup\"`) || !strings.Contains(body, "c7") || strings.Contains(body, "other") {
+		t.Fatalf("%d %s", rec.Code, body)
+	}
+}
+
 func TestAToolCallWhoseArgumentsAreNotAJSONObjectIsRefusedBeforeAnythingLeaves(t *testing.T) {
 	arguments := map[string]string{
 		"broken json":   `{\"q\":`,

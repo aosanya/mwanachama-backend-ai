@@ -13,7 +13,6 @@ import (
 func TestAStalledModelIsLetGoAfterTheGatewaysOwnTimeoutAndItsHoldIsDropped(t *testing.T) {
 	for _, kind := range []string{"openai_compatible", "anthropic"} {
 		t.Run(kind, func(t *testing.T) {
-			defer ai.SetGatewayTimeout(150 * time.Millisecond)()
 			stalled := make(chan struct{})
 			model := http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 				select {
@@ -21,7 +20,7 @@ func TestAStalledModelIsLetGoAfterTheGatewaysOwnTimeoutAndItsHoldIsDropped(t *te
 				case <-r.Context().Done():
 				}
 			})
-			h, m, r, acc := gatewaySetupKind(t, kind, model, 0)
+			h, m, r, acc := gatewaySetupWithClient(t, kind, model, 0, &http.Client{Timeout: 150 * time.Millisecond})
 			t.Cleanup(func() { close(stalled) })
 			if _, err := m.SetAccountLimits(ctx, "ag", acc.ID, ai.Limits{RequestsPerMinute: ip(1)}); err != nil {
 				t.Fatal(err)

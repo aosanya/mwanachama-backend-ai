@@ -167,7 +167,7 @@ func claudeMessage(m openAIChatMessage) (Message, error) {
 		}
 		arguments, err := callArguments(c.Function.Arguments)
 		if err != nil {
-			return Message{}, err
+			return Message{}, fmt.Errorf("%w: the call %q (id %s)", err, c.Function.Name, c.ID)
 		}
 		message.ToolCalls = append(message.ToolCalls, ToolCall{ID: c.ID, Name: c.Function.Name, Arguments: arguments})
 	}

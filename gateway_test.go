@@ -50,6 +50,11 @@ func gatewaySetupFor(t *testing.T, model http.Handler, roleLimit int) (http.Hand
 
 func gatewaySetupKind(t *testing.T, kind string, model http.Handler, roleLimit int) (http.Handler, ai.Manager, ai.AIRole, ai.Account) {
 	t.Helper()
+	return gatewaySetupWithClient(t, kind, model, roleLimit, nil)
+}
+
+func gatewaySetupWithClient(t *testing.T, kind string, model http.Handler, roleLimit int, client *http.Client) (http.Handler, ai.Manager, ai.AIRole, ai.Account) {
+	t.Helper()
 	srv := httptest.NewServer(model)
 	t.Cleanup(srv.Close)
 	m, _, _ := newTestManager(t, ai.WithMasterKey(master))
@@ -67,7 +72,7 @@ func gatewaySetupKind(t *testing.T, kind string, model http.Handler, roleLimit i
 	if err != nil {
 		t.Fatal(err)
 	}
-	h := ai.NewGateway(m, func(*http.Request) (string, string, bool) { return "ag", "ar-1", true }, nil)
+	h := ai.NewGateway(m, func(*http.Request) (string, string, bool) { return "ag", "ar-1", true }, client)
 	return h, m, r, acc
 }
 
