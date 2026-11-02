@@ -67,6 +67,7 @@ type accountManager struct {
 	source        InstructionSource
 	baseURLPolicy func(string) error
 	chat          chatSettings
+	holds         requestHolds
 }
 
 type accountKeyRow struct {

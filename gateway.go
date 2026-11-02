@@ -64,7 +64,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, http.StatusConflict, "this AI role's account cannot be used through the gateway")
 		return
 	}
-	d, err := g.m.CheckLimits(r.Context(), agencyID, CheckInput{AccountID: res.Account.ID, RoleID: res.AIRoleID})
+	d, hold, err := g.m.HoldRequest(r.Context(), agencyID, CheckInput{AccountID: res.Account.ID, RoleID: res.AIRoleID})
 	if err != nil {
 		refuse(w, http.StatusInternalServerError, "the limits could not be checked")
 		return
@@ -73,6 +73,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, http.StatusTooManyRequests, d.Reason)
 		return
 	}
+	defer hold.Release()
 	clampMaxTokens(payload, d.MaxTokens)
 	payload["model"] = res.Account.ModelName
 	key, err := g.m.AccountKey(r.Context(), agencyID, res.Account.ID)
@@ -100,7 +101,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in, outTok := answerUsage(answer)
-	_, _ = g.m.RecordUsage(r.Context(), agencyID, UsageInput{AccountID: res.Account.ID, RoleID: res.AIRoleID, TokensIn: in, TokensOut: outTok})
+	_, _ = hold.Settle(r.Context(), UsageInput{TokensIn: in, TokensOut: outTok})
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(answer)
 }

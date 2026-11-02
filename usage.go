@@ -25,6 +25,7 @@ type (
 type UsageManager interface {
 	RecordUsage(ctx context.Context, agencyID string, in UsageInput) (Usage, error)
 	CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error)
+	HoldRequest(ctx context.Context, agencyID string, in CheckInput) (Decision, *RequestHold, error)
 	ListUsage(ctx context.Context, agencyID, accountID string) (UsageReport, error)
 	ListRoleUsage(ctx context.Context, agencyID, accountID, roleID string) (UsageReport, error)
 	ListTestRunUsage(ctx context.Context, agencyID, testRunID string) (TestRunReport, error)
@@ -131,7 +132,13 @@ func accountLimits(a Account) Limits {
 	return Limits{TokensPerCall: a.TokensPerCall, TokensPerDay: a.TokensPerDay, TokensPerMonth: a.TokensPerMonth, RequestsPerDay: a.RequestsPerDay, RequestsPerMinute: a.RequestsPerMinute, TokensPerWeek: a.TokensPerWeek, RequestsPerWeek: a.RequestsPerWeek, TokensPerTest: a.TokensPerTest, ScenariosAtOnce: a.ScenariosAtOnce}
 }
 
+func noHolds(string) int { return 0 }
+
 func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in CheckInput) (Decision, error) {
+	return m.checkLimits(ctx, agencyID, in, noHolds)
+}
+
+func (m *accountManager) checkLimits(ctx context.Context, agencyID string, in CheckInput, held func(roleID string) int) (Decision, error) {
 	m.chat.writes.settled(agencyID, in.AccountID)
 	a, err := m.GetAccount(ctx, agencyID, in.AccountID)
 	if err != nil {
@@ -168,7 +175,7 @@ func (m *accountManager) CheckLimits(ctx context.Context, agencyID string, in Ch
 			if err != nil {
 				return Decision{}, err
 			}
-			used := req
+			used := req + held(roleID)
 			if ls.tokens {
 				used = tok
 			}

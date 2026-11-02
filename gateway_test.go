@@ -40,7 +40,12 @@ const modelReply = `{"choices":[{"message":{"content":"hi"}}],"usage":{"prompt_t
 
 func gatewaySetup(t *testing.T, fm *fakeModel, roleLimit int) (http.Handler, ai.Manager, ai.AIRole, ai.Account) {
 	t.Helper()
-	srv := httptest.NewServer(fm)
+	return gatewaySetupFor(t, fm, roleLimit)
+}
+
+func gatewaySetupFor(t *testing.T, model http.Handler, roleLimit int) (http.Handler, ai.Manager, ai.AIRole, ai.Account) {
+	t.Helper()
+	srv := httptest.NewServer(model)
 	t.Cleanup(srv.Close)
 	m, _, _ := newTestManager(t, ai.WithMasterKey(master))
 	acc, err := m.CreateAccount(ctx, "ag", ai.Account{Name: "a", Provider: "openai_compatible", BaseURL: srv.URL, ModelName: "synthetic", Status: "enabled"})
