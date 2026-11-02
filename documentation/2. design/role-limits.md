@@ -8,6 +8,21 @@ The console's Limits tab asks the chat "Raise the Farmers' agent's daily tokens"
 
 A form that raises one limit reads the role (`ai_get_role`) first and sends the other eight back.
 
+## What an absent key does
+
+Pinned by `routes/limit_writes_route_test.go`, which drives every row below through the route table (and `ai_set_limits`, `ai_set_role_limits` again as MCP tools). A limit is a pointer: a key that is absent and a key sent as `null` decode the same way, so no write can say "keep this one". Every write that carries limits replaces all nine; send the held ones back (read the account or role first).
+
+| Tool | A limit key absent | A limit key `null` | A limit key `0` | Other keys left out |
+| --- | --- | --- | --- | --- |
+| `ai_set_limits` | cleared to null | cleared to null | stored as 0 | not accepted: the body is the nine limits and nothing else |
+| `ai_set_role_limits` | cleared to null | cleared to null | stored as 0 | not accepted, as above; the change is a revision |
+| `ai_update_account` | cleared to null | cleared to null | stored as 0 | `name`, `provider`, `base_url`, `model_name` and `status` are required and a body without them is refused (400) with the limits untouched; `chat_enabled` and `chat_label` are kept |
+| `ai_update_role` | cleared to null | cleared to null | stored as 0 | `description` and `fine_tuning` are blanked; `name` and `status` are required; `use_agency_instructions` is kept; the change is a revision when the fine-tuning, the switch or a limit differs |
+| `ai_create_account` | starts as null | starts as null | stored as 0 | `chat_enabled` starts off and `chat_label` empty |
+| `ai_create_role` | starts as null | starts as null | stored as 0 | `use_agency_instructions` defaults to on; `description` and `fine_tuning` start empty |
+
+A stored 0 and a stored null differ only in what reads back: `ai_check_limits` skips a limit whose maximum is 0 (`usage.go`, `if max == 0 { continue }`), so both are unenforced. The trap is the first column: a form that sends only the limit it changed silently clears the other eight, `tokens_per_test` and `scenarios_at_once` included, and on a role that clearing is also saved as a revision. The holder of a form sends all nine, with the held values for the ones the person did not touch.
+
 ## What a refusal carries
 
 `ai_check_limits` answers a refused call with its sentence in `reason` as before, and now also:
