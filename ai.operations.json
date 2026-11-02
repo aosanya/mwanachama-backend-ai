@@ -81,7 +81,7 @@
       "action": "ai.account.update",
       "tool": "ai_update_account",
       "title": "Change account",
-      "description": "Replace an account's settings and limits. The key is untouched. The chat switch and chat label are replaced only when sent.",
+      "description": "Replace an account's settings and limits. The key is untouched. The chat switch and chat label are replaced only when sent. A limit left out of the body is cleared, so send the ones to keep.",
       "args": [
         {
           "from": "path",
@@ -112,7 +112,7 @@
       "action": "ai.limits.set",
       "tool": "ai_set_limits",
       "title": "Set limits",
-      "description": "Replace only the account's nine limits, tokens per test and scenarios at once among them (zero means none, null means the limit does not apply). Name, provider, address, model and key are untouched.",
+      "description": "Replace only the account's nine limits, tokens per test and scenarios at once among them (zero means none, null means the limit does not apply). Name, provider, address, model and key are untouched. A limit left out of the body is cleared, so send the ones to keep.",
       "args": [
         {
           "from": "path",
@@ -495,7 +495,7 @@
       "action": "ai.role.update",
       "tool": "ai_update_role",
       "title": "Change AI role",
-      "description": "Replace an AI role's settings. A change to the fine-tuning, the switch or a limit takes effect on the next resolve and is kept as a revision.",
+      "description": "Replace an AI role's settings. A change to the fine-tuning, the switch or a limit takes effect on the next resolve and is kept as a revision. A limit left out of the body is cleared, so send the ones to keep.",
       "args": [
         {
           "from": "path",

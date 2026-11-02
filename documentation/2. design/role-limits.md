@@ -23,6 +23,8 @@ Pinned by `routes/limit_writes_route_test.go`, which drives every row below thro
 
 A stored 0 and a stored null differ only in what reads back: `ai_check_limits` skips a limit whose maximum is 0 (`usage.go`, `if max == 0 { continue }`), so both are unenforced. The trap is the first column: a form that sends only the limit it changed silently clears the other eight, `tokens_per_test` and `scenarios_at_once` included, and on a role that clearing is also saved as a revision. The holder of a form sends all nine, with the held values for the ones the person did not touch.
 
+The description of `ai_set_limits`, `ai_update_account`, `ai_update_role` and `ai_set_role_limits` says it in one sentence a caller reads before it calls: "A limit left out of the body is cleared, so send the ones to keep." `mcp/limit_writes_description_test.go` pins that the four carry it.
+
 ## What a refusal carries
 
 `ai_check_limits` answers a refused call with its sentence in `reason` as before, and now also:
