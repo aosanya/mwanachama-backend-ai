@@ -18,7 +18,7 @@ The key never appears in a URL or a body. Gemini accepts it as a query parameter
 
 ## Users
 
-The Test of an account (`httpProber`) is `Call` with one short prompt. The gateway of HS127 will use `Call` with tools and read the token counts for usage.
+The Test of an account (`httpProber`) is `Call` with one short prompt. The gateway uses `Call` for an `anthropic` account (HS624), reading the token counts from its `Reply` for usage; an `openai_compatible` account is still forwarded as the agent sent it.
 
 ## Model lists
 

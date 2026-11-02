@@ -9,7 +9,11 @@ import (
 	"github.com/aosanya/mwanachama-backend-ai/models"
 )
 
-const maxGatewayBody = 1 << 20
+const (
+	maxGatewayBody = 1 << 20
+	modelUnreached = "the model could not be reached"
+	modelErrored   = "the model answered with an error"
+)
 
 type GatewayCaller func(r *http.Request) (agencyID, agencyRoleID string, ok bool)
 
@@ -60,7 +64,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, http.StatusConflict, noAccountMapped)
 		return
 	}
-	if res.Account.Status != "enabled" || res.Account.Provider != models.ProviderOpenAICompatible {
+	if res.Account.Status != "enabled" || !gatewayKinds[res.Account.Provider] {
 		refuse(w, http.StatusConflict, "this AI role's account cannot be used through the gateway")
 		return
 	}
@@ -81,29 +85,51 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, http.StatusConflict, "this AI role's account has no usable key")
 		return
 	}
-	adapter, _ := AdapterFor(res.Account.Provider)
-	out, err := adapter.BuildRequest(r.Context(), *res.Account, key, Request{})
-	if err != nil {
-		refuse(w, http.StatusBadGateway, "the request to the model could not be made")
+	relay := g.relayOpenAI
+	if res.Account.Provider == models.ProviderAnthropic {
+		relay = g.relayClaude
+	}
+	answer, fail := relay(r, *res.Account, key, payload, d.MaxTokens)
+	if fail != nil {
+		refuse(w, fail.status, fail.sentence)
 		return
+	}
+	_, _ = hold.Settle(r.Context(), UsageInput{TokensIn: answer.tokensIn, TokensOut: answer.tokensOut})
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write(answer.body)
+}
+
+type answered struct {
+	body                []byte
+	tokensIn, tokensOut int
+}
+
+type failure struct {
+	status   int
+	sentence string
+}
+
+var gatewayKinds = map[string]bool{models.ProviderOpenAICompatible: true, models.ProviderAnthropic: true}
+
+func (g *gateway) relayOpenAI(r *http.Request, a Account, key string, payload map[string]any, _ int) (answered, *failure) {
+	adapter, _ := AdapterFor(a.Provider)
+	out, err := adapter.BuildRequest(r.Context(), a, key, Request{})
+	if err != nil {
+		return answered{}, &failure{http.StatusBadGateway, "the request to the model could not be made"}
 	}
 	body, _ := json.Marshal(payload)
 	out.Body, out.ContentLength = io.NopCloser(bytes.NewReader(body)), int64(len(body))
 	resp, err := g.client.Do(out)
 	if err != nil {
-		refuse(w, http.StatusBadGateway, "the model could not be reached")
-		return
+		return answered{}, &failure{http.StatusBadGateway, modelUnreached}
 	}
 	defer resp.Body.Close()
 	answer, err := io.ReadAll(io.LimitReader(resp.Body, maxReplyBytes))
 	if err != nil || resp.StatusCode/100 != 2 {
-		refuse(w, http.StatusBadGateway, "the model answered with an error")
-		return
+		return answered{}, &failure{http.StatusBadGateway, modelErrored}
 	}
 	in, outTok := answerUsage(answer)
-	_, _ = hold.Settle(r.Context(), UsageInput{TokensIn: in, TokensOut: outTok})
-	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(answer)
+	return answered{body: answer, tokensIn: in, tokensOut: outTok}, nil
 }
 
 func clampMaxTokens(payload map[string]any, limit int) {
