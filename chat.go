@@ -57,20 +57,19 @@ func (m *accountManager) ChatAccount(ctx context.Context, agencyID, accountID st
 	if err != nil {
 		return ChatReply{}, err
 	}
-	decision, err := m.CheckLimits(ctx, agencyID, CheckInput{AccountID: accountID})
+	decision, hold, err := m.HoldRequest(ctx, agencyID, CheckInput{AccountID: accountID})
 	if err != nil {
 		return ChatReply{}, err
 	}
 	if !decision.Allowed {
 		return ChatReply{}, fmt.Errorf("%w: %s", ErrLimitReached, decision.Reason)
 	}
+	defer hold.Release()
 	reply, outcome := Call(ctx, m.chatClient(), held, key, chatRequest(in, decision.MaxTokens))
 	if err := outcomeError(outcome); err != nil {
 		return ChatReply{}, err
 	}
-	used := UsageInput{AccountID: accountID, TokensIn: reply.InputTokens, TokensOut: reply.OutputTokens}
-	recording := context.WithoutCancel(ctx)
-	m.chat.writes.after(agencyID, accountID, func() { _, _ = m.RecordUsage(recording, agencyID, used) })
+	_, _ = hold.Settle(context.WithoutCancel(ctx), UsageInput{TokensIn: reply.InputTokens, TokensOut: reply.OutputTokens})
 	return chatReply(reply), nil
 }
 
