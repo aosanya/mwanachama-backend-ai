@@ -133,11 +133,26 @@ func (g *gateway) relayOpenAI(r *http.Request, a Account, key string, payload ma
 	return answered{body: answer, tokensIn: in, tokensOut: outTok}, nil
 }
 
+var clientCapKeys = []string{"max_tokens", "max_completion_tokens"}
+
 func clampMaxTokens(payload map[string]any, limit int) {
 	if limit <= 0 {
 		return
 	}
-	if asked, _ := payload["max_tokens"].(float64); asked <= 0 || int(asked) > limit {
+	capped := false
+	for _, key := range clientCapKeys {
+		asked, isNumber := payload[key].(float64)
+		switch {
+		case isNumber && asked > 0:
+			if asked > float64(limit) {
+				payload[key] = limit
+			}
+			capped = true
+		default:
+			delete(payload, key)
+		}
+	}
+	if !capped {
 		payload["max_tokens"] = limit
 	}
 }

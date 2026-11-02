@@ -87,11 +87,17 @@ func claudeRequest(payload map[string]any, limit int) (Request, error) {
 	for _, t := range body.Tools {
 		tools = append(tools, Tool{Name: t.Function.Name, Description: t.Function.Description, Parameters: parametersOrEmpty(t.Function.Parameters)})
 	}
-	asked := body.MaxTokens
-	if asked <= 0 {
-		asked = body.MaxCompletionTokens
+	return Request{Messages: messages, Tools: tools, MaxTokens: chatMaxTokens(smallerAsk(body.MaxTokens, body.MaxCompletionTokens), limit)}, nil
+}
+
+func smallerAsk(first, second int) int {
+	switch {
+	case first <= 0:
+		return second
+	case second <= 0:
+		return first
 	}
-	return Request{Messages: messages, Tools: tools, MaxTokens: chatMaxTokens(asked, limit)}, nil
+	return min(first, second)
 }
 
 func claudeMessages(in []openAIChatMessage) ([]Message, error) {
