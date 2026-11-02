@@ -26,4 +26,5 @@ var (
 	ErrModelRefused    = errors.New(TestRefused)
 	ErrModelUnreached  = errors.New(TestUnreached)
 	ErrModelError      = errors.New(TestModelError)
+	ErrModelRedirected = errors.New(TestRedirected)
 )

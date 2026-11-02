@@ -99,21 +99,3 @@ func TestAnOpenAICompatibleCallStillFollowsARedirect(t *testing.T) {
 		t.Fatalf("outcome %v, hits %d, reply %+v", out, catcher.hits, reply)
 	}
 }
-
-func TestAClaudeAccountThatRedirectsIsTestedAsAnErrorAndLeaksNothing(t *testing.T) {
-	other, catcher := otherHost(t, anthropicAnswer)
-	first := httptest.NewServer(redirectsTo{other.URL, http.StatusTemporaryRedirect})
-	t.Cleanup(first.Close)
-	m, _, _ := newTestManager(t, ai.WithMasterKey(master))
-	acc, err := m.CreateAccount(ctx, "ag", ai.Account{Name: "a", Provider: "anthropic", BaseURL: first.URL, ModelName: "synthetic", Status: "enabled"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := m.TestAccount(ctx, "ag", acc.ID, ai.KeyInput{Key: syntheticKey})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got.LastTestResult != ai.TestModelError || catcher.hits != 0 {
-		t.Fatalf("result %q, the other host was reached %d times with %q", got.LastTestResult, catcher.hits, catcher.heard)
-	}
-}

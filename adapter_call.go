@@ -2,9 +2,12 @@ package ai
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 )
+
+const maxRedirects = 10
 
 func Call(ctx context.Context, client *http.Client, a Account, key string, r Request) (Reply, ProbeOutcome) {
 	ad, ok := AdapterFor(a.Provider)
@@ -39,8 +42,19 @@ func carriesKeyHeader(req *http.Request) bool {
 
 func withoutRedirects(client *http.Client) *http.Client {
 	guarded := *client
-	guarded.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	guarded.CheckRedirect = stayOnTheHost
 	return &guarded
+}
+
+func stayOnTheHost(req *http.Request, via []*http.Request) error {
+	first := via[0].URL
+	if req.URL.Scheme != first.Scheme || req.URL.Host != first.Host {
+		return http.ErrUseLastResponse
+	}
+	if len(via) >= maxRedirects {
+		return errors.New("too many redirects")
+	}
+	return nil
 }
 
 func send(client *http.Client, req *http.Request) ([]byte, ProbeOutcome) {

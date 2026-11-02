@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-const modelRedirected = "the model's address redirected the request, which is not followed"
-
 var (
 	errUncarriable        = errors.New("the request cannot be carried to this model")
 	errNotChatCompletions = errors.New("the request is not in the OpenAI chat-completions shape")
@@ -74,7 +72,7 @@ func (g *gateway) relayClaude(r *http.Request, a Account, key string, payload ma
 	case ProbeUnreached:
 		return answered{}, &failure{http.StatusBadGateway, modelUnreached}
 	case ProbeRedirected:
-		return answered{}, &failure{http.StatusBadGateway, modelRedirected}
+		return answered{}, &failure{http.StatusBadGateway, TestRedirected}
 	}
 	return answered{}, &failure{http.StatusBadGateway, modelErrored}
 }

@@ -80,6 +80,8 @@ func outcomeError(outcome ProbeOutcome) error {
 		return ErrModelRefused
 	case ProbeUnreached:
 		return ErrModelUnreached
+	case ProbeRedirected:
+		return ErrModelRedirected
 	}
 	return ErrModelError
 }

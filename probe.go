@@ -13,6 +13,7 @@ const (
 	TestRefused    = "the model refused the key"
 	TestUnreached  = "the model could not be reached"
 	TestModelError = "the model answered with an error"
+	TestRedirected = "the model's address redirected the request, which is not followed"
 	probePrompt    = "Reply with the single word OK."
 )
 
@@ -114,6 +115,8 @@ func resultOf(out ProbeOutcome) string {
 		return TestRefused
 	case ProbeUnreached:
 		return TestUnreached
+	case ProbeRedirected:
+		return TestRedirected
 	}
 	return TestModelError
 }

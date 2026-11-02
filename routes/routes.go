@@ -27,6 +27,7 @@ var Sentinels = map[string]error{
 	"ErrModelRefused":     ai.ErrModelRefused,
 	"ErrModelUnreached":   ai.ErrModelUnreached,
 	"ErrModelError":       ai.ErrModelError,
+	"ErrModelRedirected":  ai.ErrModelRedirected,
 
 	"ErrRoleNotFound":      ai.ErrRoleNotFound,
 	"ErrInvalidRole":       ai.ErrInvalidRole,

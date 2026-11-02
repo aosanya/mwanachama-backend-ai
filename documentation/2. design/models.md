@@ -31,7 +31,7 @@ The provider call sits behind `ModelLister` (`FetchModels(ctx, account, key) Mod
 | `anthropic` | `GET {base}/v1/models?limit=1000`, with `anthropic-version` | `x-api-key` | `data[].id` |
 | `gemini` | `GET {base}/v1beta/models?pageSize=1000` | `x-goog-api-key` | `models[].name` without `models/`, only those that can `generateContent` (or that do not say) |
 
-The outcome maps as the account test does: 401 and 403 are `ErrModelRefused`, other non-2xx and unparseable answers are `ErrModelError`, a transport failure is `ErrModelUnreached`. Only the first page of up to 1000 names is read.
+The outcome maps as the account test does: 401 and 403 are `ErrModelRefused`, other non-2xx and unparseable answers are `ErrModelError`, a transport failure is `ErrModelUnreached`, and an address that redirects to another host is `ErrModelRedirected` (a key in a header is never sent on). Only the first page of up to 1000 names is read.
 
 ## What a refresh keeps and drops
 
