@@ -16,7 +16,7 @@ Built: eight declared objects, thirty declared operations and the model gateway,
 |---|---|
 | AI accounts | Add, change and remove an account; set its key without ever reading it back |
 | Test an account | One short request with the account's key, answered as working or one plain reason |
-| Limits and usage | Five limits on every account and every AI role (tokens per call, per day and per month; requests per day and per minute), counted by role and day |
+| Limits and usage | Nine limits on every account and every AI role (tokens per call, per day, per week, per month and per test; requests per minute, per day and per week; scenarios at once), counted by role and day |
 | AI roles | A container for a system prompt: the agency's instructions for the seat, plus the manager's fine-tuning, used on the very next message |
 | Role mapping | Each AI role uses one account, and speaks for one agency role |
 | Provider agnostic | No provider is fixed: an account names its own kind, address and model; OpenAI-compatible first, others as adapters |
