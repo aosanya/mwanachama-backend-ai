@@ -916,6 +916,8 @@
     "ErrModelUnreached": 502,
     "ErrModelError": 502,
     "ErrModelRedirected": 502,
+    "ErrModelRateLimited": 502,
+    "ErrModelForbidden": 502,
     "ErrRoleNotFound": 404,
     "ErrInvalidRole": 400,
     "ErrDuplicateRoleName": 409,

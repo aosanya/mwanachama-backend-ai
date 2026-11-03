@@ -64,6 +64,8 @@ func TestChatRouteAnswersEachRefusalWithItsStatusAndSentence(t *testing.T) {
 		sentence string
 	}{
 		{"model refuses the key", 401, "", 502, "the model refused the key"},
+		{"model limits the key", 429, "", 502, "the model is limiting this key right now"},
+		{"model forbids the key", 403, "", 502, "the model forbids this key from making the call"},
 		{"model fails", 500, "down", 502, "the model answered with an error"},
 		{"conversation malformed", 200, "", 400, "invalid chat request: messages are required"},
 	}

@@ -34,6 +34,8 @@ func TestAccountTestEachReason(t *testing.T) {
 		{"refused", ai.ProbeRefused, true, "the model refused the key"},
 		{"unreached", ai.ProbeUnreached, true, "the model could not be reached"},
 		{"error", ai.ProbeError, true, "the model answered with an error"},
+		{"forbidden", ai.ProbeForbidden, true, "the model forbids this key from making the call"},
+		{"ratelimited", ai.ProbeRateLimited, true, "the model is limiting this key right now"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

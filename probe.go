@@ -8,13 +8,15 @@ import (
 )
 
 const (
-	TestWorking    = "working"
-	TestNoKey      = "no key is set for this account"
-	TestRefused    = "the model refused the key"
-	TestUnreached  = "the model could not be reached"
-	TestModelError = "the model answered with an error"
-	TestRedirected = "the model's address redirected the request, which is not followed"
-	probePrompt    = "Reply with the single word OK."
+	TestWorking     = "working"
+	TestNoKey       = "no key is set for this account"
+	TestRefused     = "the model refused the key"
+	TestUnreached   = "the model could not be reached"
+	TestModelError  = "the model answered with an error"
+	TestRedirected  = "the model's address redirected the request, which is not followed"
+	TestRateLimited = "the model is limiting this key right now"
+	TestForbidden   = "the model forbids this key from making the call"
+	probePrompt     = "Reply with the single word OK."
 )
 
 type ProbeOutcome int
@@ -25,6 +27,8 @@ const (
 	ProbeUnreached
 	ProbeError
 	ProbeRedirected
+	ProbeRateLimited
+	ProbeForbidden
 )
 
 type ProbeResult struct {
@@ -117,6 +121,10 @@ func resultOf(out ProbeOutcome) string {
 		return TestUnreached
 	case ProbeRedirected:
 		return TestRedirected
+	case ProbeRateLimited:
+		return TestRateLimited
+	case ProbeForbidden:
+		return TestForbidden
 	}
 	return TestModelError
 }

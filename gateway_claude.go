@@ -73,6 +73,12 @@ func (g *gateway) relayClaude(r *http.Request, a Account, key string, payload ma
 		return answered{}, &failure{http.StatusBadGateway, modelUnreached}
 	case ProbeRedirected:
 		return answered{}, &failure{http.StatusBadGateway, TestRedirected}
+	case ProbeRefused:
+		return answered{}, &failure{http.StatusBadGateway, TestRefused}
+	case ProbeForbidden:
+		return answered{}, &failure{http.StatusBadGateway, TestForbidden}
+	case ProbeRateLimited:
+		return answered{}, &failure{http.StatusTooManyRequests, TestRateLimited}
 	}
 	return answered{}, &failure{http.StatusBadGateway, modelErrored}
 }

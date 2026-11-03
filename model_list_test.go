@@ -143,6 +143,7 @@ func TestAFailedRefreshLeavesTheListAsItWas(t *testing.T) {
 		want  error
 	}{
 		{"refused", ai.ProbeRefused, nil, ai.ErrModelRefused},
+		{"forbidden", ai.ProbeForbidden, nil, ai.ErrModelForbidden},
 		{"unreached", ai.ProbeUnreached, nil, ai.ErrModelUnreached},
 		{"error", ai.ProbeError, nil, ai.ErrModelError},
 		{"empty answer", ai.ProbeOK, nil, ai.ErrModelError},

@@ -57,7 +57,7 @@ The policy receives the address and nothing else, so the key can never reach its
 
 An HTTP caller of `POST /agencies/{agencyID}/accounts/{accountID}/test` now sends a JSON body, `{}` when it has no key to try; an empty body is no longer accepted, as for every other operation that takes a body. The MCP tool `ai_test_account` takes `key` as an optional argument beside `accountID`.
 
-The result stored on the account (`last_test_result`, `last_tested_at`) is exactly one of `working`, "no key is set for this account", "the model refused the key" (401 or 403), "the model could not be reached" (transport failure) or "the model answered with an error" (any other status) or "the model's address redirected the request, which is not followed" (a redirect to another host; the key is never sent on).
+The result stored on the account (`last_test_result`, `last_tested_at`) is exactly one of `working`, "no key is set for this account", "the model refused the key" (401), "the model forbids this key from making the call" (403), "the model is limiting this key right now" (429), "the model could not be reached" (transport failure) or "the model answered with an error" (any other status) or "the model's address redirected the request, which is not followed" (a redirect to another host; the key is never sent on).
 
 ### What was pinged and what answered
 
@@ -117,6 +117,8 @@ Providers: `openai_compatible` and `anthropic` chat. `gemini` answers "this prov
 | Conversation malformed | 400 | invalid chat request: followed by what is wrong |
 | A limit is reached | 429 | this account is at its limit: followed by the limit's sentence |
 | Model refused the key | 502 | the model refused the key |
+| Model forbids the key (403) | 502 | the model forbids this key from making the call |
+| Model is limiting the key (429) | 502 | the model is limiting this key right now |
 | Model not reached | 502 | the model could not be reached |
 | Model answered with an error | 502 | the model answered with an error |
 | Model address redirected to another host | 502 | the model's address redirected the request, which is not followed |

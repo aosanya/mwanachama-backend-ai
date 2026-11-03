@@ -99,6 +99,10 @@ func outcomeError(outcome ProbeOutcome) error {
 		return ErrModelUnreached
 	case ProbeRedirected:
 		return ErrModelRedirected
+	case ProbeRateLimited:
+		return ErrModelRateLimited
+	case ProbeForbidden:
+		return ErrModelForbidden
 	}
 	return ErrModelError
 }

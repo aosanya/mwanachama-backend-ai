@@ -150,6 +150,26 @@ func TestGatewayDoesNotEchoAClaudeError(t *testing.T) {
 	}
 }
 
+func TestGatewayTellsAClaudeRefusalFromAForbiddenFromALimit(t *testing.T) {
+	cases := []struct {
+		status   int
+		code     int
+		sentence string
+	}{
+		{401, 502, "the model refused the key"},
+		{403, 502, "the model forbids this key from making the call"},
+		{429, 429, "the model is limiting this key right now"},
+	}
+	for _, c := range cases {
+		fc := &fakeClaude{status: c.status}
+		h, _, _, _ := gatewaySetupKind(t, "anthropic", fc, 0)
+		rec := post(h, `{"messages":[{"role":"user","content":"x"}]}`)
+		if rec.Code != c.code || !strings.Contains(rec.Body.String(), c.sentence) || strings.Contains(rec.Body.String(), syntheticKey) {
+			t.Fatalf("%d: %d %s", c.status, rec.Code, rec.Body)
+		}
+	}
+}
+
 func TestGatewayRefusesAClaudeAccountAtALimitBeforeAnythingLeaves(t *testing.T) {
 	fc := &fakeClaude{reply: claudeReply}
 	h, m, _, acc := gatewaySetupKind(t, "anthropic", fc, 0)

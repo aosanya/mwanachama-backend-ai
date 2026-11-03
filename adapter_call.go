@@ -68,8 +68,12 @@ func send(client *http.Client, req *http.Request) ([]byte, ProbeOutcome) {
 	}
 	defer resp.Body.Close()
 	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
+	case resp.StatusCode == http.StatusUnauthorized:
 		return nil, ProbeRefused
+	case resp.StatusCode == http.StatusForbidden:
+		return nil, ProbeForbidden
+	case resp.StatusCode == http.StatusTooManyRequests:
+		return nil, ProbeRateLimited
 	case guarded && resp.StatusCode >= 300 && resp.StatusCode < 400:
 		return nil, ProbeRedirected
 	case resp.StatusCode < 200 || resp.StatusCode >= 300:

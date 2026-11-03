@@ -20,7 +20,7 @@ An agency's AI is spread across places that do not know each other: a model key 
 - See the models for the Model dropdown: the ones the provider reported for this agency's key, above the standard starting list, and refresh them from the provider with an account's key. See [the model list](../2.%20design/models.md).
 - Add several accounts to an agency and change or remove any of them.
 - Set an account's key. It is never shown again, only whether it is set.
-- Test an account: one short request, answered as working or as one of four plain reasons (no key is set, the model refused the key, the model could not be reached, the model answered with an error).
+- Test an account: one short request, answered as working or as one of six plain reasons (no key is set, the model refused the key, the model forbids the key, the model is limiting the key, the model could not be reached, the model answered with an error).
 - Set five limits on an account and on each AI role: tokens per call, tokens per day, tokens per month, requests per day and requests per minute. Zero means none. For each limit the lower of the role's and the account's applies. Tokens per call cuts a reply short; the others refuse the call, in one plain sentence that names whose limit and which.
 - See use against each limit, by account and by AI role.
 - Create AI roles, each a container for a system prompt.

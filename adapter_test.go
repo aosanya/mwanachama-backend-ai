@@ -96,7 +96,7 @@ func TestAnthropicSendsItsVersionHeader(t *testing.T) {
 
 func TestEachKindMapsStatusesToOutcomes(t *testing.T) {
 	for _, kind := range []string{"openai_compatible", "anthropic", "gemini"} {
-		for status, want := range map[int]ai.ProbeOutcome{401: ai.ProbeRefused, 403: ai.ProbeRefused, 500: ai.ProbeError, 429: ai.ProbeError} {
+		for status, want := range map[int]ai.ProbeOutcome{401: ai.ProbeRefused, 403: ai.ProbeForbidden, 500: ai.ProbeError, 429: ai.ProbeRateLimited} {
 			srv, _ := fakeProvider(t, status, `{"error":"`+syntheticKey+`"}`)
 			acct := ai.Account{Provider: kind, BaseURL: srv.URL, ModelName: "m"}
 			if _, out := ai.Call(ctx, srv.Client(), acct, syntheticKey, ai.Request{Prompt: "x", MaxTokens: 1}); out != want {

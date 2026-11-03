@@ -28,6 +28,8 @@ var Sentinels = map[string]error{
 	"ErrModelUnreached":   ai.ErrModelUnreached,
 	"ErrModelError":       ai.ErrModelError,
 	"ErrModelRedirected":  ai.ErrModelRedirected,
+	"ErrModelRateLimited": ai.ErrModelRateLimited,
+	"ErrModelForbidden":   ai.ErrModelForbidden,
 
 	"ErrRoleNotFound":      ai.ErrRoleNotFound,
 	"ErrInvalidRole":       ai.ErrInvalidRole,

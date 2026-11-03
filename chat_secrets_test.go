@@ -27,7 +27,8 @@ func TestChatAnswersWithAReasonAndKeepsTheKeyOutOfEveryFailure(t *testing.T) {
 		reason string
 	}{
 		{"key refused", 401, "bad key " + syntheticKey, ai.ErrModelRefused, "the model refused the key"},
-		{"forbidden", 403, "Bearer " + syntheticKey, ai.ErrModelRefused, "the model refused the key"},
+		{"forbidden", 403, "Bearer " + syntheticKey, ai.ErrModelForbidden, "the model forbids this key from making the call"},
+		{"rate limited", 429, "slow down " + syntheticKey, ai.ErrModelRateLimited, "the model is limiting this key right now"},
 		{"provider error", 500, "boom " + syntheticKey, ai.ErrModelError, "the model answered with an error"},
 		{"answer unreadable", 200, "not json " + syntheticKey, ai.ErrModelError, "the model answered with an error"},
 		{"answer without choices", 200, `{"choices":[]}`, ai.ErrModelError, "the model answered with an error"},

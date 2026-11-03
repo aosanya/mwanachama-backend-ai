@@ -45,7 +45,7 @@ func TestModelListsAreAskedFromEachKindInItsOwnWay(t *testing.T) {
 }
 
 func TestModelListStatusesMapToOutcomes(t *testing.T) {
-	cases := map[int]ai.ProbeOutcome{401: ai.ProbeRefused, 403: ai.ProbeRefused, 404: ai.ProbeError, 500: ai.ProbeError}
+	cases := map[int]ai.ProbeOutcome{401: ai.ProbeRefused, 403: ai.ProbeForbidden, 404: ai.ProbeError, 500: ai.ProbeError}
 	for status, want := range cases {
 		srv, _ := fakeProvider(t, status, `{"error":"`+syntheticKey+`"}`)
 		got := ai.NewHTTPModelLister().FetchModels(ctx, ai.Account{Provider: "openai_compatible", BaseURL: srv.URL}, syntheticKey)
