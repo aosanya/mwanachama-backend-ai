@@ -84,6 +84,8 @@ type UsageInput struct {
 	TokensOut int    `json:"tokens_out"`
 	TestRunID string `json:"test_run_id,omitempty"`
 	Step      string `json:"step,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	Person    string `json:"person,omitempty"`
 }
 
 type CheckInput struct {

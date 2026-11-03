@@ -282,7 +282,7 @@
       "action": "ai.account.chat",
       "tool": "ai_chat_account",
       "title": "Chat with account",
-      "description": "Send a conversation to the account's model with its saved key and get back the model's next message. messages is the whole conversation so far, oldest first, each with a role (system, user, assistant or tool) and its content; an assistant message that asked for tools carries tool_calls (id, name, arguments as an object), and a tool message answers one of them with its tool_call_id. tools lists what the model may ask for (name, description, parameters as a JSON schema object). The reply is one assistant message: content, and tool_calls when the model wants a tool run; the caller runs it and sends the whole conversation again with the result. Nothing is stored except the account's usage, which counts against its limits. The key is never returned.",
+      "description": "Send a conversation to the account's model with its saved key and get back the model's next message. messages is the whole conversation so far, oldest first, each with a role (system, user, assistant or tool) and its content; an assistant message that asked for tools carries tool_calls (id, name, arguments as an object), and a tool message answers one of them with its tool_call_id. tools lists what the model may ask for (name, description, parameters as a JSON schema object). The reply is one assistant message: content, and tool_calls when the model wants a tool run; the caller runs it and sends the whole conversation again with the result. Give role_id to chat as one AI role: that agent's own limits apply and the usage is counted against it as well as the account. Nothing is stored except the usage, which counts against the limits. The key is never returned.",
       "args": [
         {
           "from": "path",
@@ -443,16 +443,21 @@
     "list_ai_roles": {
       "method": "GET",
       "path": "/agencies/{agencyID}/ai-roles",
-      "call": "ListAIRoles",
+      "call": "ListAIRolesOfSeat",
       "action": "ai.role.list",
       "tool": "ai_list_roles",
       "title": "List AI roles",
-      "description": "List one agency's AI roles.",
+      "description": "List one agency's AI roles, oldest first. Give agency_role_id to list only the agents mapped to that seat.",
       "args": [
         {
           "from": "path",
           "as": "agencyID",
           "description": "The agency that owns the AI roles. The address decides, not the body."
+        },
+        {
+          "from": "query",
+          "as": "agency_role_id",
+          "description": "An agency role (seat) to list the agents of. Leave out for every AI role."
         }
       ],
       "returns": [

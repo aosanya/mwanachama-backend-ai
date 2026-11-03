@@ -25,6 +25,7 @@ type ChatInput struct {
 	Messages  []ChatMessage `json:"messages"`
 	Tools     []ChatTool    `json:"tools,omitempty"`
 	MaxTokens int           `json:"max_tokens,omitempty"`
+	RoleID    string        `json:"role_id,omitempty"`
 }
 
 type ChatReply struct {

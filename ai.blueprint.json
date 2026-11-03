@@ -285,6 +285,81 @@
       ]
     },
     {
+      "role": "usage_day",
+      "description": "Requests and tokens used in one UTC day by one account, optionally one AI role, for one kind of work, started by one person, on the model the account named at that moment. Empty person means the agent started it.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, derived from the agency, account, role, day, model, kind and person.",
+          "primary": true
+        },
+        {
+          "name": "agency_id",
+          "type": "string",
+          "description": "The agency that owns the account.",
+          "required": true
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The account used.",
+          "required": true
+        },
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "The AI role the use was for. Empty when none."
+        },
+        {
+          "name": "day",
+          "type": "string",
+          "description": "The UTC day, as YYYY-MM-DD.",
+          "required": true
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "description": "The model name the account carried when the call was made."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "The kind of work: chat, workflow_run, agency_review, test_run or background_job. Empty on rows counted before kinds were kept, read as other."
+        },
+        {
+          "name": "person",
+          "type": "string",
+          "description": "The opaque id of the member or manager who started the work. Empty when the agent started it."
+        },
+        {
+          "name": "requests",
+          "type": "int",
+          "description": "Requests counted that day."
+        },
+        {
+          "name": "tokens_in",
+          "type": "int",
+          "description": "Tokens sent that day."
+        },
+        {
+          "name": "tokens_out",
+          "type": "int",
+          "description": "Tokens received that day."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "agency_day",
+          "description": "Reading an agency's use over a span of days.",
+          "fields": [
+            "agency_id",
+            "day"
+          ]
+        }
+      ]
+    },
+    {
       "role": "test_run_usage",
       "description": "Requests and tokens one test run used at one step, by one account and optionally one AI role.",
       "fields": [

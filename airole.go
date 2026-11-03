@@ -23,6 +23,7 @@ type (
 type RoleManager interface {
 	CreateAIRole(ctx context.Context, agencyID string, in AIRoleInput) (AIRole, error)
 	ListAIRoles(ctx context.Context, agencyID string) ([]AIRole, error)
+	ListAIRolesOfSeat(ctx context.Context, agencyID, agencyRoleID string) ([]AIRole, error)
 	GetAIRole(ctx context.Context, agencyID, roleID string) (AIRole, error)
 	UpdateAIRole(ctx context.Context, agencyID, roleID, savedBy string, in AIRoleInput) (AIRole, error)
 	SetAIRoleLimits(ctx context.Context, agencyID, roleID, savedBy string, in Limits) (AIRole, error)
@@ -107,10 +108,17 @@ func (m *accountManager) CreateAIRole(ctx context.Context, agencyID string, in A
 }
 
 func (m *accountManager) ListAIRoles(ctx context.Context, agencyID string) ([]AIRole, error) {
-	q := m.st.Query(ctx, roleAIRole).Where("agency_id = ?", agencyID).Order("created_at asc")
-	out, err := specstore.List[AIRole](m.st, q, roleAIRole)
+	return m.ListAIRolesOfSeat(ctx, agencyID, "")
+}
+
+func (m *accountManager) ListAIRolesOfSeat(ctx context.Context, agencyID, agencyRoleID string) ([]AIRole, error) {
+	q := m.st.Query(ctx, roleAIRole).Where("agency_id = ?", agencyID)
+	if agencyRoleID != "" {
+		q = q.Where("agency_role_id = ?", agencyRoleID)
+	}
+	out, err := specstore.List[AIRole](m.st, q.Order("created_at asc, id asc"), roleAIRole)
 	if err != nil {
-		return nil, fmt.Errorf("ListAIRoles: %w", err)
+		return nil, fmt.Errorf("ListAIRolesOfSeat: %w", err)
 	}
 	return out, nil
 }

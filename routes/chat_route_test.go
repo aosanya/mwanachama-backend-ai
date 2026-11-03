@@ -98,7 +98,7 @@ func TestChatRouteAnswersNotFoundForAnotherInstancesAccount(t *testing.T) {
 	}
 }
 
-func TestChatToolTakesTheAccountAndTheConversationAndNothingElse(t *testing.T) {
+func TestChatToolTakesTheAccountTheConversationAndOptionallyTheAgent(t *testing.T) {
 	for _, tool := range routes.Tools(struct{ ai.Manager }{}) {
 		if tool.Name != "ai_chat_account" {
 			continue
@@ -115,10 +115,10 @@ func TestChatToolTakesTheAccountAndTheConversationAndNothingElse(t *testing.T) {
 		for name := range schema.Properties {
 			names = append(names, name)
 		}
-		if tool.Action != "ai.account.chat" || len(names) != 5 || schema.AdditionalProperties || strings.Join(schema.Required, ",") != "accountID,agencyID" {
+		if tool.Action != "ai.account.chat" || len(names) != 6 || schema.AdditionalProperties || strings.Join(schema.Required, ",") != "accountID,agencyID" {
 			t.Fatalf("%s %v required %v", tool.Action, names, schema.Required)
 		}
-		for _, want := range []string{"accountID", "agencyID", "messages", "tools", "max_tokens"} {
+		for _, want := range []string{"accountID", "agencyID", "messages", "tools", "max_tokens", "role_id"} {
 			if _, ok := schema.Properties[want]; !ok {
 				t.Fatalf("no %s in %v", want, names)
 			}

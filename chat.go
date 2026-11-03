@@ -52,11 +52,14 @@ func (m *accountManager) ChatAccount(ctx context.Context, agencyID, accountID st
 	if err := checkChat(held, in); err != nil {
 		return ChatReply{}, err
 	}
+	if err := m.checkChatRole(ctx, agencyID, accountID, in.RoleID); err != nil {
+		return ChatReply{}, err
+	}
 	key, err := m.AccountKey(ctx, agencyID, accountID)
 	if err != nil {
 		return ChatReply{}, err
 	}
-	decision, hold, err := m.HoldRequest(ctx, agencyID, CheckInput{AccountID: accountID})
+	decision, hold, err := m.HoldRequest(ctx, agencyID, CheckInput{AccountID: accountID, RoleID: in.RoleID})
 	if err != nil {
 		return ChatReply{}, err
 	}
@@ -70,6 +73,20 @@ func (m *accountManager) ChatAccount(ctx context.Context, agencyID, accountID st
 	}
 	_, _ = hold.Settle(context.WithoutCancel(ctx), UsageInput{TokensIn: reply.InputTokens, TokensOut: reply.OutputTokens})
 	return chatReply(reply), nil
+}
+
+func (m *accountManager) checkChatRole(ctx context.Context, agencyID, accountID, roleID string) error {
+	if roleID == "" {
+		return nil
+	}
+	role, err := m.GetAIRole(ctx, agencyID, roleID)
+	if err != nil {
+		return err
+	}
+	if role.AccountID != "" && role.AccountID != accountID {
+		return invalidChat("this AI role speaks through another account")
+	}
+	return nil
 }
 
 func outcomeError(outcome ProbeOutcome) error {
