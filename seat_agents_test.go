@@ -75,7 +75,7 @@ func TestChatAsASpecificAgentUsesItsLimitsAndCountsItsUsage(t *testing.T) {
 		t.Fatal(err)
 	}
 	in := listRolesConversation()
-	in.RoleID = agent.ID
+	in.RoleID, in.Kind = agent.ID, "chat"
 
 	if _, err := m.ChatAccount(ctx, "ag-1", a.ID, in); err != nil {
 		t.Fatal(err)
@@ -112,11 +112,11 @@ func TestChatAsAnAgentThatIsNotThereOrSpeaksThroughAnotherAccountIsRefused(t *te
 	}
 
 	in := listRolesConversation()
-	in.RoleID = "no-such-agent"
+	in.RoleID, in.Kind = "no-such-agent", "chat"
 	if _, err := m.ChatAccount(ctx, "ag-1", a.ID, in); !errors.Is(err, ai.ErrRoleNotFound) {
 		t.Fatalf("unknown agent: %v", err)
 	}
-	in.RoleID = agent.ID
+	in.RoleID, in.Kind = agent.ID, "chat"
 	if _, err := m.ChatAccount(ctx, "ag-1", a.ID, in); !errors.Is(err, ai.ErrInvalidChat) {
 		t.Fatalf("another account's agent: %v", err)
 	}

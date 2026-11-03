@@ -78,7 +78,9 @@ func gatewaySetupWithClient(t *testing.T, kind string, model http.Handler, roleL
 
 func post(h http.Handler, body string) *httptest.ResponseRecorder {
 	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(body)))
+	req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(body))
+	req.Header.Set("X-Usage-Kind", "chat")
+	h.ServeHTTP(rec, req)
 	return rec
 }
 

@@ -25,7 +25,20 @@ func checkChat(a Account, in ChatInput) error {
 	if !chatProviders[a.Provider] {
 		return ErrChatUnsupported
 	}
+	if err := validKind(in); err != nil {
+		return err
+	}
 	return validChat(in)
+}
+
+func validKind(in ChatInput) error {
+	if in.Kind == "" && in.RoleID != "" {
+		return invalidChat("the call names no kind of work")
+	}
+	if in.Kind != "" && !models.ValidKind(in.Kind) {
+		return invalidChat("%s", kindSentence)
+	}
+	return nil
 }
 
 func validChat(in ChatInput) error {

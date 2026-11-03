@@ -71,7 +71,7 @@ func (m *accountManager) ChatAccount(ctx context.Context, agencyID, accountID st
 	if err := outcomeError(outcome); err != nil {
 		return ChatReply{}, err
 	}
-	_, _ = hold.Settle(context.WithoutCancel(ctx), UsageInput{TokensIn: reply.InputTokens, TokensOut: reply.OutputTokens})
+	_, _ = hold.Settle(context.WithoutCancel(ctx), UsageInput{TokensIn: reply.InputTokens, TokensOut: reply.OutputTokens, Kind: in.Kind, Person: in.Person})
 	return chatReply(reply), nil
 }
 

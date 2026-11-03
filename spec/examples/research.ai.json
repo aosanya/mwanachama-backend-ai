@@ -22,6 +22,12 @@
       "description": "Use counted by window."
     },
     {
+      "role": "usage_day",
+      "name": "daily_consumption",
+      "table": "daily_consumptions",
+      "description": "Use counted by day, model, kind of work and person."
+    },
+    {
       "role": "test_run_usage",
       "name": "trial_consumption",
       "table": "trial_consumptions",

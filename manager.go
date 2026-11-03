@@ -85,6 +85,7 @@ func NewManager(db *gorm.DB, s *spec.Spec, opts ...Option) (Manager, error) {
 		roleAccount:      models.Account{},
 		roleAccountKey:   accountKeyRow{},
 		roleUsage:        models.Usage{},
+		roleUsageDay:     models.UsageDay{},
 		roleTestRunUsage: models.TestRunUsage{},
 		roleAIRole:       models.AIRole{},
 		roleRevision:     models.AIRoleRevision{},

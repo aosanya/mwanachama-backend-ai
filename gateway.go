@@ -6,14 +6,17 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/aosanya/mwanachama-backend-ai/models"
 )
 
 const (
-	maxGatewayBody = 1 << 20
-	modelUnreached = "the model could not be reached"
-	modelErrored   = "the model answered with an error"
+	usageKindHeader   = "X-Usage-Kind"
+	usagePersonHeader = "X-Usage-Person"
+	maxGatewayBody    = 1 << 20
+	modelUnreached    = "the model could not be reached"
+	modelErrored      = "the model answered with an error"
 )
 
 type GatewayCaller func(r *http.Request) (agencyID, agencyRoleID string, ok bool)
@@ -56,6 +59,11 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, http.StatusBadRequest, "streaming is not supported")
 		return
 	}
+	kind, person := r.Header.Get(usageKindHeader), r.Header.Get(usagePersonHeader)
+	if kind == "" || !models.ValidKind(kind) {
+		refuse(w, http.StatusBadRequest, "the call names no kind of work, or one that is not one of "+strings.Join(models.UsageKinds, ", "))
+		return
+	}
 	res, err := g.m.ResolveAgencyRole(r.Context(), agencyID, agencyRoleID)
 	if err != nil {
 		refuse(w, http.StatusNotFound, "no AI role speaks for this seat")
@@ -95,7 +103,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		refuse(w, fail.status, fail.sentence)
 		return
 	}
-	_, _ = hold.Settle(context.WithoutCancel(r.Context()), UsageInput{TokensIn: answer.tokensIn, TokensOut: answer.tokensOut})
+	_, _ = hold.Settle(context.WithoutCancel(r.Context()), UsageInput{TokensIn: answer.tokensIn, TokensOut: answer.tokensOut, Kind: kind, Person: person})
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(answer.body)
 }

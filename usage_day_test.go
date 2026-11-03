@@ -64,11 +64,11 @@ func TestUsageIsKeptPerDayByKindPersonAndModel(t *testing.T) {
 		t.Fatalf("%d rows: %+v", len(rows), rows)
 	}
 	want := map[string][3]int{
-		"2026-10-27|synthetic-model|chat|actor-1":          {2, 30, 10},
-		"2026-10-27|synthetic-model|test_run|actor-2":      {1, 100, 50},
-		"2026-10-27|synthetic-model|background_job|":       {1, 7, 3},
-		"2026-10-27|second-model|chat|actor-1":             {1, 1, 1},
-		"2026-10-28|second-model|chat|actor-1":             {1, 2, 2},
+		"2026-10-27|synthetic-model|chat|actor-1":     {2, 30, 10},
+		"2026-10-27|synthetic-model|test_run|actor-2": {1, 100, 50},
+		"2026-10-27|synthetic-model|background_job|":  {1, 7, 3},
+		"2026-10-27|second-model|chat|actor-1":        {1, 1, 1},
+		"2026-10-28|second-model|chat|actor-1":        {1, 2, 2},
 	}
 	for _, r := range rows {
 		key := r.Day + "|" + r.Model + "|" + r.Kind + "|" + r.Person
@@ -144,9 +144,28 @@ func TestTheGatewayRefusesACallThatNamesNoKindOfWork(t *testing.T) {
 	}
 }
 
+func gatewayWithDB(t *testing.T) (http.Handler, *gorm.DB, ai.AIRole) {
+	t.Helper()
+	srv := httptest.NewServer(&fakeModel{reply: modelReply})
+	t.Cleanup(srv.Close)
+	m, db, _ := newTestManager(t, ai.WithMasterKey(master))
+	acc, err := m.CreateAccount(ctx, "ag", ai.Account{Name: "a", Provider: "openai_compatible", BaseURL: srv.URL, ModelName: "synthetic", Status: "enabled"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.SetAccountKey(ctx, "ag", acc.ID, ai.KeyInput{Key: syntheticKey}); err != nil {
+		t.Fatal(err)
+	}
+	role := mustRole(t, m, "ag", roleIn("scribe"))
+	if _, err := m.SetAIRoleMapping(ctx, "ag", role.ID, ai.AIRoleMappingInput{AccountID: acc.ID, AgencyRoleID: "ar-1"}); err != nil {
+		t.Fatal(err)
+	}
+	h := ai.NewGateway(m, func(*http.Request) (string, string, bool) { return "ag", "ar-1", true }, nil)
+	return h, db, role
+}
+
 func TestTheGatewayRecordsTheKindAndPersonItWasToldOf(t *testing.T) {
-	fm := &fakeModel{reply: modelReply}
-	h, m, _, _ := gatewaySetup(t, fm, 0)
+	h, db, role := gatewayWithDB(t)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"messages":[]}`))
 	req.Header.Set("X-Usage-Kind", "agency_review")
@@ -155,5 +174,8 @@ func TestTheGatewayRecordsTheKindAndPersonItWasToldOf(t *testing.T) {
 	if rec.Code != 200 {
 		t.Fatalf("%d %s", rec.Code, rec.Body)
 	}
-	_ = m
+	rows := dayRows(t, db, nil)
+	if len(rows) != 1 || rows[0].Kind != "agency_review" || rows[0].Person != "actor-3" || rows[0].RoleID != role.ID || rows[0].Model != "synthetic" {
+		t.Fatalf("%+v", rows)
+	}
 }

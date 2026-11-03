@@ -67,6 +67,7 @@ func TestAGatewayCallCancelledAfterTheModelAnsweredStillRecordsItsUse(t *testing
 	client := &http.Client{Transport: cancelsAfterAnswer{cancel}}
 	h := ai.NewGateway(m, func(*http.Request) (string, string, bool) { return "ag", "ar-1", true }, client)
 	req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"messages":[]}`)).WithContext(callerCtx)
+	req.Header.Set("X-Usage-Kind", "chat")
 
 	h.ServeHTTP(httptest.NewRecorder(), req)
 

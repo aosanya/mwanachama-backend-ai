@@ -29,6 +29,7 @@ type UsageManager interface {
 	ListUsage(ctx context.Context, agencyID, accountID string) (UsageReport, error)
 	ListRoleUsage(ctx context.Context, agencyID, accountID, roleID string) (UsageReport, error)
 	ListTestRunUsage(ctx context.Context, agencyID, testRunID string) (TestRunReport, error)
+	UsageBreakdown(ctx context.Context, agencyID, window, groupBy, roleID, model string) (Breakdown, error)
 }
 
 func WithClock(clock func() time.Time) Option {
@@ -56,11 +57,15 @@ func windowStarts(t time.Time) map[string]string {
 }
 
 func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in UsageInput) (Usage, error) {
-	if _, err := m.GetAccount(ctx, agencyID, in.AccountID); err != nil {
+	account, err := m.GetAccount(ctx, agencyID, in.AccountID)
+	if err != nil {
 		return Usage{}, err
 	}
 	if in.TokensIn < 0 || in.TokensOut < 0 {
 		return Usage{}, fmt.Errorf("%w: tokens cannot be negative", ErrInvalidAccount)
+	}
+	if err := checkKind(in.Kind); err != nil {
+		return Usage{}, err
 	}
 	var last Usage
 	for window, start := range windowStarts(m.instant()) {
@@ -84,6 +89,9 @@ func (m *accountManager) RecordUsage(ctx context.Context, agencyID string, in Us
 				return Usage{}, err
 			}
 		}
+	}
+	if err := m.recordDay(ctx, agencyID, account, in); err != nil {
+		return Usage{}, err
 	}
 	if in.TestRunID != "" {
 		if err := m.recordTestRun(ctx, agencyID, in); err != nil {

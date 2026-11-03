@@ -115,10 +115,10 @@ func TestChatToolTakesTheAccountTheConversationAndOptionallyTheAgent(t *testing.
 		for name := range schema.Properties {
 			names = append(names, name)
 		}
-		if tool.Action != "ai.account.chat" || len(names) != 6 || schema.AdditionalProperties || strings.Join(schema.Required, ",") != "accountID,agencyID" {
+		if tool.Action != "ai.account.chat" || len(names) != 8 || schema.AdditionalProperties || strings.Join(schema.Required, ",") != "accountID,agencyID" {
 			t.Fatalf("%s %v required %v", tool.Action, names, schema.Required)
 		}
-		for _, want := range []string{"accountID", "agencyID", "messages", "tools", "max_tokens", "role_id"} {
+		for _, want := range []string{"accountID", "agencyID", "messages", "tools", "max_tokens", "role_id", "kind", "person"} {
 			if _, ok := schema.Properties[want]; !ok {
 				t.Fatalf("no %s in %v", want, names)
 			}

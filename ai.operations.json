@@ -387,6 +387,49 @@
       ],
       "status": 200
     },
+    "usage_breakdown": {
+      "method": "GET",
+      "path": "/agencies/{agencyID}/usage/breakdown",
+      "call": "UsageBreakdown",
+      "action": "ai.usage.breakdown",
+      "tool": "ai_usage_breakdown",
+      "title": "Break down use",
+      "description": "Where an agency's tokens went over a span: one row for each day, model, AI role, kind of work (chat, workflow_run, agency_review, test_run, background_job or other) and person (empty when the agent started the work), with the requests, tokens_in and tokens_out of that row. window is today, 7d (this day and the six before), month (the first of this month to today) or last_month. group_by is person or agent and only says which of the two the caller will chart: the rows always carry both. Give role_id or model to keep one agent or one model. Managers only.",
+      "args": [
+        {
+          "from": "path",
+          "as": "agencyID",
+          "description": "The agency that owns the accounts. The address decides, not the body."
+        },
+        {
+          "from": "query",
+          "as": "window",
+          "required": true,
+          "description": "The span: today, 7d, month or last_month."
+        },
+        {
+          "from": "query",
+          "as": "group_by",
+          "description": "person or agent. Leave out for agent."
+        },
+        {
+          "from": "query",
+          "as": "role_id",
+          "description": "An AI role to keep. Leave out for every agent."
+        },
+        {
+          "from": "query",
+          "as": "model",
+          "description": "A model name to keep. Leave out for every model."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ],
+      "status": 200
+    },
     "list_test_run_usage": {
       "method": "GET",
       "path": "/agencies/{agencyID}/test-runs/{testRunID}/usage",
